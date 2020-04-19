@@ -1,5 +1,4 @@
-import { NeuralNetwork } from '../src/neural-network/neural-network';
-import { TrainItem } from '../src/neural-network/types';
+import { TrainItem, NeuralNetwork } from '../src/core';
 
 const nn = new NeuralNetwork({
 	inputSize: 2,
