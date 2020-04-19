@@ -1,15 +1,15 @@
 {
-  "name": "@cross-nn/server",
+  "name": "@cross-nn/browser",
   "version": "0.0.0",
-  "description": "Server module of cross-platform neural network",
-  "main": "./server.js",
-  "typings": "./server.d.ts",
+  "description": "Browser module of cross-platform neural network",
+  "main": "./browser.js",
+  "typings": "./browser.d.ts",
   "author": "Andrey Vasin <vofuss@gmail.com>",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/vofus/cross-nn.git",
-    "directory": "server"
+    "directory": "packages/browser"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
