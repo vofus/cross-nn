@@ -1,0 +1,17 @@
+{
+  "name": "@cross-nn/core",
+  "version": "0.0.0",
+  "description": "Core module of cross-platform neural network",
+  "main": "./core.js",
+  "typings": "./core.d.ts",
+  "author": "Andrey Vasin <vofuss@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vofus/cross-nn.git",
+    "directory": "core"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}

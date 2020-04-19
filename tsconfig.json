@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "outDir": "dist",
+    "target": "es5",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "sourceMap": false,
+    "declaration": true,
+    "noImplicitAny": true,
+    "esModuleInterop": true,
+    "paths": {
+      "@cross-nn/core/*": ["./core/*"],
+      "@cross-nn/server/*": ["./server/*"],
+      "@cross-nn/browser/*": ["./browser/*"],
+      "*": ["node_modules/*"]
+    },
+    "lib": ["es2015"]
+  },
+  "include": [
+    "core/**/*",
+    "server/**/*",
+    "browser/**/*"
+  ]
+}
