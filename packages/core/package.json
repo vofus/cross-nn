@@ -2,8 +2,8 @@
   "name": "@cross-nn/core",
   "version": "0.0.0",
   "description": "Core module of cross-platform neural network",
-  "main": "./core.js",
-  "typings": "./core.d.ts",
+  "main": "./index.js",
+  "typings": "./index.d.ts",
   "author": "Andrey Vasin <vofuss@gmail.com>",
   "license": "MIT",
   "repository": {
@@ -12,6 +12,25 @@
     "directory": "packages/core"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "prepublish": "npm run build",
+    "watch": "tsc -w",
+    "build": "tsc",
+    "watch-node": "nodemon --watch dist/src dist/src/index.js",
+    "watch-node-test": "nodemon --watch dist/src --watch dist/test dist/test/index.js",
+    "dev": "npm run watch & npm run watch-node",
+    "test": "npm run watch & npm run watch-node-test"
+  },
+  "dependencies": {
+    "lodash": "^4.17.15",
+    "mnist": "^1.1.0",
+    "numjs": "^0.16.0"
+  },
+  "devDependencies": {
+    "@types/lodash": "^4.14.150",
+    "@types/node": "^13.13.0",
+    "@types/numjs": "^0.14.4",
+    "nodemon": "^2.0.3",
+    "tslint": "^6.1.1",
+    "typescript": "^3.8.3"
   }
 }

@@ -1,8 +1,5 @@
 {
   "compilerOptions": {
-    "baseUrl": ".",
-    "rootDir": ".",
-    "outDir": "dist",
     "target": "es5",
     "module": "commonjs",
     "moduleResolution": "node",
@@ -10,12 +7,6 @@
     "declaration": true,
     "noImplicitAny": true,
     "esModuleInterop": true,
-    "paths": {
-      "@cross-nn/*": ["./packages/*"]
-    },
     "lib": ["es2015"]
-  },
-  "include": [
-    "packages/**/*"
-  ]
+  }
 }

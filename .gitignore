@@ -1,6 +1,11 @@
 .DS_STORE
 
-/dist/
+# compiled output
+models
+dist
+tmp
+out-tsc
+
 *.log
 node_modules
 
