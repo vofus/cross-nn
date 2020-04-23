@@ -2,7 +2,16 @@ import nj, { NdArray } from 'numjs';
 import { shuffle as _shuffle } from 'lodash/fp';
 import { Sigmoid } from '../activators/sigmoid';
 import { ActivationStrategy } from '../activators/types';
-import { BackPropResult, ForwardPropResult, LearningType, NeuralNetworkConfig, RelationType, TrainItem } from './types';
+import {
+	BackPropResult,
+	ForwardPropResult,
+	LearningType,
+	NeuralNetworkConfig,
+	RelationType,
+	TrainItem,
+	TrainReporter
+} from './types';
+import { defaultTrainReporter } from './default-train-reporter';
 
 export class NeuralNetwork {
 	private static readonly LR_DEFAULT: number = 0.3;
@@ -90,22 +99,25 @@ export class NeuralNetwork {
 	 * Тренируем сеть
 	 * @param trainSet {TrainItem[]} тренировочная выборка
 	 * @param epochs {number} количество эпох обучения
+	 * @param reporter {TrainReporter} функция обратного вызова для отслеживания состояния обучения
 	 */
-	train(trainSet: TrainItem[], epochs: number): void {
-		let epochCounter = epochs;
-		while (epochCounter > 0) {
-			const shuffled: TrainItem[] = _shuffle(trainSet);
-			let trainCounter = shuffled.length - 1;
+	train(trainSet: TrainItem[], epochs: number, reporter: TrainReporter = defaultTrainReporter): void {
+		let epochCounter = 0;
 
-			console.time(`Epoch ${epochCounter}`);
-			while (trainCounter >= 0) {
+		while (++epochCounter <= epochs) {
+			const shuffled: TrainItem[] = _shuffle(trainSet);
+			let startDate = Date.now();
+			let trainCounter = shuffled.length;
+
+			while (--trainCounter >= 0) {
 				const { inputs, targets } = shuffled[trainCounter];
 				this.trainStep(inputs, targets);
-				trainCounter -= 1;
 			}
 
-			console.timeEnd(`Epoch ${epochCounter}`);
-			epochCounter -= 1;
+			reporter({
+				epochNumber: epochCounter,
+				epochTime: Date.now() - startDate
+			});
 		}
 	}
 
@@ -182,7 +194,7 @@ export class NeuralNetwork {
 	/**
 	 * Прямое распространение сигнала
 	 * @param inputMatrix {NdArray} Входные сигналы, приобразованные в двумерный массив
-	 * @returns {IForwardResult}
+	 * @returns {ForwardResult}
 	 */
 	private forwardPropagation(inputMatrix: NdArray): ForwardPropResult {
 		const hiddenInputs = this.weightsIH.dot(inputMatrix);
@@ -202,7 +214,7 @@ export class NeuralNetwork {
 	 * Обратное распространение ошибки
 	 * @param inputMatrix {NdArray} Входные сигналы, приобразованные в двумерный массив
 	 * @param targetMatrix {NdArray} Ожидаемые результаты, приобразованные в двумерный массив
-	 * @param result {IForwardResult} Объект с выходными сигналами на слоях после прямого прохода
+	 * @param result {ForwardResult} Объект с выходными сигналами на слоях после прямого прохода
 	 */
 	private backPropagation(inputMatrix: NdArray, targetMatrix: NdArray, result: ForwardPropResult): BackPropResult {
 		const { hiddenOutputs, finalOutputs } = result;

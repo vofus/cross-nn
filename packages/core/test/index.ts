@@ -2,7 +2,7 @@ import { TrainItem, NeuralNetwork } from '../src/core';
 
 const nn = new NeuralNetwork({
 	inputSize: 2,
-	hiddenSize: 100,
+	hiddenSize: 30,
 	outputSize: 1
 });
 
@@ -14,7 +14,7 @@ const trainingSet: TrainItem[] = [
 ];
 
 const scaledTrainingSet: TrainItem[] = [];
-let scale = 200;
+let scale = 150;
 
 while (scale--) {
 	scaledTrainingSet.push(...trainingSet);
