@@ -2,10 +2,7 @@
   "extends": "../../tsconfig",
   "compilerOptions": {
     "baseUrl": ".",
-    "outDir": "dist",
-    "paths": {
-      "@cross-nn/matrix": ["../matrix"]
-    }
+    "outDir": "dist"
   },
   "include": [
     "src/**/*.ts",
