@@ -4,7 +4,7 @@
     "baseUrl": ".",
     "outDir": "dist",
     "paths": {
-      "@cross-nn/*": ["../../packages/*"]
+      "@cross-nn/matrix": ["../matrix"]
     }
   },
   "include": [
@@ -12,6 +12,7 @@
     "test/**/*.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "__old"
   ]
 }

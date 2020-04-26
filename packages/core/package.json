@@ -20,7 +20,7 @@
     "watch": "tsc -w",
     "build": "tsc",
     "watch-node": "nodemon --watch dist/src dist/src/core.js",
-    "watch-node-test": "nodemon --watch dist/src --watch dist/test dist/test/index.js",
+    "watch-node-test": "nodemon --watch dist/src --watch dist/test dist/test/index.js --inspect",
     "dev": "npm run watch & npm run watch-node",
     "test": "npm run watch & npm run watch-node-test"
   },
@@ -28,6 +28,9 @@
     "lodash": "^4.17.15",
     "mnist": "^1.1.0",
     "numjs": "^0.16.0"
+  },
+  "peerDependencies": {
+    "@cross-nn/matrix": "^0.0.1"
   },
   "devDependencies": {
     "@types/lodash": "^4.14.150",

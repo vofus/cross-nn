@@ -1,14 +1,17 @@
 import { Matrix } from '@cross-nn/matrix';
-import { isNumber } from '@cross-nn/core/src/utils';
-import { Activator, LayerType } from '@cross-nn/core/src/types';
+import { isNumber } from '../utils';
+import { Activator, LayerConfig, LayerType } from '../types';
 
 export class Layer {
 	// Тип слоя
 	private readonly TYPE: LayerType;
 
+	// Коэффициент обучения
+	private readonly LR: number;
+
 	// Функция активации,
 	// по умолчанию возвращает значение принимаемого аргумента
-	private readonly activator: Activator = (val) => val;
+	private readonly activator: Activator;
 
 	// Весовые коэффициенты между предыдущим и текущим слоями
 	// Для входного слоя эта матрица отсутствует
@@ -17,13 +20,21 @@ export class Layer {
 	/**
 	 * Constructor
 	 */
-	constructor(type: LayerType, layerSize: number, prevLayerSize?: number) {
+	constructor({
+			type,
+			activator,
+			layerSize,
+			prevLayerSize,
+			learningRate
+		}: LayerConfig) {
 		if (type !== LayerType.INPUT && !Boolean(prevLayerSize)) {
 			throw new Error('For layer type HIDDEN or OUTPUT param prevLayerSize is required!');
 		}
 
 		this.TYPE = type;
+		this.LR = learningRate;
 		this.weights = this.initWeight(layerSize, prevLayerSize);
+		this.activator = typeof activator === 'function' ? activator : (val) => val;
 	}
 
 	/**
