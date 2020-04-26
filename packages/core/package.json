@@ -25,12 +25,10 @@
     "test": "npm run watch & npm run watch-node-test"
   },
   "dependencies": {
+    "@cross-nn/matrix": "^0.0.2",
     "lodash": "^4.17.15",
     "mnist": "^1.1.0",
     "numjs": "^0.16.0"
-  },
-  "peerDependencies": {
-    "@cross-nn/matrix": "^0.0.1"
   },
   "devDependencies": {
     "@types/lodash": "^4.14.150",
