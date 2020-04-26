@@ -2,13 +2,17 @@
   "extends": "../../tsconfig",
   "compilerOptions": {
     "baseUrl": ".",
-    "outDir": "dist"
+    "outDir": "dist",
+    "paths": {
+      "@cross-nn/matrix": ["../matrix"]
+    }
   },
   "include": [
     "src/**/*.ts",
     "test/**/*.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "__old"
   ]
 }

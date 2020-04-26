@@ -1,4 +1,4 @@
-import { MatrixSize } from '../types';
+import { ApplyProcessor, FillProcessor, MatrixSize } from '../types';
 import { isNumber, isMatrixSize, isMatrixArray } from '../utils';
 
 export class Matrix {
@@ -9,8 +9,9 @@ export class Matrix {
 	/**
 	 * Создать матрицу по заданным параметрам
 	 */
-	public static fromParams(size: MatrixSize, fillNumber: number): Matrix {
-		const condition = isMatrixSize(size) && isNumber(fillNumber);
+	public static fromParams(size: MatrixSize, fillNumber: number | FillProcessor): Matrix {
+		const fillNumberIsFunction = typeof fillNumber === 'function';
+		const condition = isMatrixSize(size) && (isNumber(fillNumber) || fillNumberIsFunction);
 		let matrix: Matrix = null;
 
 		if (condition) {
@@ -18,7 +19,8 @@ export class Matrix {
 
 			for (let rowIndex = 0; rowIndex < size[0]; ++rowIndex) {
 				for (let colIndex = 0; colIndex < size[1]; ++colIndex) {
-					matrix.set(rowIndex, colIndex, fillNumber);
+					const result = fillNumberIsFunction ? (fillNumber as any)() : fillNumber;
+					matrix.set(rowIndex, colIndex, result);
 				}
 			}
 		}
@@ -146,6 +148,28 @@ export class Matrix {
 			for (let rowIndex = 0; rowIndex < this.rows; ++rowIndex) {
 				for (let colIndex = 0; colIndex < this.cols; ++colIndex) {
 					matrix.set(rowIndex, colIndex, this.get(rowIndex, colIndex) * factor);
+				}
+			}
+		}
+
+		return matrix;
+	}
+
+	/**
+	 * Получить матрицу, в которой каждый элемент является
+	 * значением функции, которая принимает в качестве аргумента
+	 * значение элемента из текущей матрицы
+	 */
+	public applyFunction(processor: ApplyProcessor): Matrix {
+		let matrix: Matrix = null;
+
+		if (typeof processor === 'function') {
+			matrix = new Matrix(this.size);
+
+			for (let rowIndex = 0; rowIndex < this.rows; ++rowIndex) {
+				for (let colIndex = 0; colIndex < this.cols; ++colIndex) {
+					const result = processor(this.get(rowIndex, colIndex));
+					matrix.set(rowIndex, colIndex, result);
 				}
 			}
 		}
