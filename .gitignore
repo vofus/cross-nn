@@ -1,7 +1,6 @@
 .DS_STORE
 
 # compiled output
-models
 dist
 tmp
 out-tsc
