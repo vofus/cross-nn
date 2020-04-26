@@ -1,8 +1,5 @@
-import { NdArray, NjParam, sigmoid } from 'numjs';
-import { BasicActivator } from './basic-activator';
+import { Activator } from '@cross-nn/core/src/types';
 
-export class Sigmoid extends BasicActivator {
-	protected activate<T = number>(x: NjParam<T>): NdArray<T> {
-		return sigmoid(x);
-	}
-}
+export const sigmoid: Activator = (value) => {
+	return 1 / (1 + (1 / Math.pow(Math.E, value)));
+};

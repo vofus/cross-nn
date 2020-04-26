@@ -2,7 +2,10 @@
   "extends": "../../tsconfig",
   "compilerOptions": {
     "baseUrl": ".",
-    "outDir": "dist"
+    "outDir": "dist",
+    "paths": {
+      "@cross-nn/*": ["../../packages/*"]
+    }
   },
   "include": [
     "src/**/*.ts",
