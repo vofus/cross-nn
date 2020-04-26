@@ -1,4 +1,4 @@
-import { Matrix } from '../src/models/matrix';
+import { Matrix } from '../src/models';
 
 const m_01 = Matrix.fromParams([3, 3], () => Math.random() - 0.5);
 
