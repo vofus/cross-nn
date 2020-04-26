@@ -1,6 +1,6 @@
 {
   "name": "@cross-nn/matrix",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Matrix module of cross-platform neural network",
   "main": "./dist/src/matrix.js",
   "typings": "./dist/src/matrix.d.ts",
