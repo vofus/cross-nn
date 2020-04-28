@@ -20,8 +20,8 @@
     "watch": "tsc -w",
     "build": "tsc",
     "watch-node": "nodemon --watch dist/src dist/src/core.js",
-    "watch-node-test": "nodemon --watch dist/src --watch dist/test dist/test/index.js --inspect",
-    "dev": "npm run watch & npm run watch-node",
+    "watch-node-test": "nodemon --watch dist/src --watch dist/test dist/test/index.js",
+    "dev": "npm run watch & nodemon",
     "test": "npm run watch & npm run watch-node-test"
   },
   "dependencies": {

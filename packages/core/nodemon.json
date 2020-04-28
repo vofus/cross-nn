@@ -1,0 +1,14 @@
+{
+    "env": {
+      "TZ": "UTC",
+      "NODE_ENV": "development",
+      "LOG_LEVEL": "debug"
+    },
+    "watch": [
+      "dist/src",
+      "dist/test"
+    ],
+    "ext": "js",
+    "signal": "SIGTERM",
+    "exec": "node ./dist/test/index.js"
+  }
