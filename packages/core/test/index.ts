@@ -2,14 +2,14 @@ import { NeuralNetwork } from '../src/models';
 import { NeuralNetworkConfig, TrainItem, LearningGradAlgorithm } from '../src/types';
 
 const nnConfig: NeuralNetworkConfig = {
-	neuronCounts: [2, 30,/* 50, 100, 50, 30,*/ 1]
+	neuronCounts: [2, 30, 50, 100, 50, 30, 1]
 };
 
 const trainSet: TrainItem[] = [
-	{inputs: [0, 1], targets: [1]},
-	{inputs: [1, 0], targets: [1]},
-	{inputs: [0, 0], targets: [0]},
-	{inputs: [1, 1], targets: [0]}
+	{inputs: [[0, 1]], targets: [[1]]},
+	{inputs: [[1, 0]], targets: [[1]]},
+	{inputs: [[0, 0]], targets: [[0]]},
+	{inputs: [[1, 1]], targets: [[0]]}
 ];
 
 const scaledTrainSet: TrainItem[] = [];

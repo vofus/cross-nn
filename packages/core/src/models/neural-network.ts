@@ -73,9 +73,9 @@ export class NeuralNetwork {
 
 				const outputs = this.layers.reduce((inputMatrix: Matrix, layer: Layer) => {
 					return layer.calcOutputs(inputMatrix);
-				}, Matrix.fromArray([inputs]).T);
+				}, Matrix.fromArray(inputs).T);
 
-				// console.log('OUTPUT: ', outputs);
+				// console.log('OUTPUT: ', outputs.toArray());
 			}
 
 			reporter({
