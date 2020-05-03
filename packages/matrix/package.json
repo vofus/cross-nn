@@ -1,6 +1,6 @@
 {
   "name": "@cross-nn/matrix",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Matrix module of cross-platform neural network",
   "main": "./dist/src/matrix.js",
   "typings": "./dist/src/matrix.d.ts",
@@ -19,7 +19,7 @@
     "prepare": "npm run build",
     "watch": "tsc -w",
     "build": "tsc",
-    "watch-node": "nodemon --watch dist/src dist/src/core.js",
+    "watch-node": "nodemon --watch dist/src dist/src/matrix.js",
     "watch-node-test": "nodemon --watch dist/src --watch dist/test dist/test/index.js",
     "dev": "npm run watch & npm run watch-node",
     "test": "npm run watch & npm run watch-node-test"

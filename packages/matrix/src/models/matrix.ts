@@ -51,19 +51,6 @@ export class Matrix {
 	}
 
 	/**
-	 * Получить размер матрицы
-	 */
-	public get size(): MatrixSize {
-		const condition = isNumber(this.rows) && isNumber(this.cols);
-
-		if (condition) {
-			return [this.rows, this.cols];
-		}
-
-		return null;
-	}
-
-	/**
 	 * @private Constructor
 	 */
 	private constructor(size: MatrixSize) {
@@ -74,6 +61,19 @@ export class Matrix {
 		for (let i = 0; i < this.rows; ++i) {
 			this.value[i] = new Array<number>(this.cols);
 		}
+	}
+
+	/**
+	 * Получить размер матрицы
+	 */
+	public get size(): MatrixSize {
+		const condition = isNumber(this.rows) && isNumber(this.cols);
+
+		if (condition) {
+			return [this.rows, this.cols];
+		}
+
+		return null;
 	}
 
 	/**
@@ -89,6 +89,13 @@ export class Matrix {
 		}
 
 		return matrix;
+	}
+
+	/**
+	 * Конвертировать объект Matrix в массив
+	 */
+	public toArray(): number[][] {
+		return this.value;
 	}
 
 	/**
