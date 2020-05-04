@@ -149,7 +149,7 @@ export class Matrix {
 	 * Скалярное произведение матриц
 	 */
 	public dot(matrix: Matrix): Matrix {
-		if (!this.validateMultiplyCompatible(matrix)) {
+		if (!this.validateDotCompatible(matrix)) {
 			return null;
 		}
 
@@ -173,10 +173,21 @@ export class Matrix {
 	 * Получить матрицу, в которой каждый элемент является
 	 * произведением элемента исходной матрицы и множителя
 	 */
-	public multiply(factor: number): Matrix {
+	public multiply(factor: Matrix | number): Matrix {
 		let matrix: Matrix = null;
 
-		if (isNumber(factor)) {
+		if (factor instanceof Matrix && this.validateSizeCompatible(factor)) {
+			matrix = new Matrix(this.size);
+
+			for (let rowIndex = 0; rowIndex < this.rows; ++rowIndex) {
+				for (let colIndex = 0; colIndex < this.cols; ++colIndex) {
+					const value = this.get(rowIndex, colIndex) * factor.get(rowIndex, colIndex);
+					matrix.set(rowIndex, colIndex, value);
+				}
+			}
+		}
+
+		if (typeof factor === 'number' && isNumber(factor)) {
 			matrix = new Matrix(this.size);
 
 			for (let rowIndex = 0; rowIndex < this.rows; ++rowIndex) {
@@ -260,7 +271,7 @@ export class Matrix {
 	/**
 	 * Проверить совместимость матрицы для перемножения
 	 */
-	private validateMultiplyCompatible(matrix: Matrix): boolean {
+	private validateDotCompatible(matrix: Matrix): boolean {
 		const size: MatrixSize = Boolean(matrix) ? matrix.size : null;
 
 		return isMatrixSize(size) && this.cols === size[0];
