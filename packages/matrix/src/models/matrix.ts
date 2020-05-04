@@ -99,6 +99,33 @@ export class Matrix {
 	}
 
 	/**
+	 * Изменить форму матрицы по заданным параметрам.
+	 * Доступно изменение на матрицу с таким же количеством элементов.
+	 */
+	public resize(size: MatrixSize): Matrix {
+		const condition = isMatrixSize(size)
+			&& (this.rows * this.cols) === (size[0] * size[1]);
+		let matrix: Matrix = null;
+
+		if (condition) {
+			matrix = new Matrix(size);
+
+			for (let rowIndex = 0; rowIndex < this.rows; ++rowIndex) {
+				for (let colIndex = 0; colIndex < this.cols; ++colIndex) {
+					const srcIndex = (rowIndex * this.cols) + colIndex;
+					const targetRowIndex = Math.floor(srcIndex / size[1]);
+					const targetColIndex = srcIndex % size[1];
+					const item = this.get(rowIndex, colIndex);
+
+					matrix.set(targetRowIndex, targetColIndex, item);
+				}
+			}
+		}
+
+		return matrix;
+	}
+
+	/**
 	 * Получить элемент матрицы
 	 */
 	public get(rowIndex: number, colIndex: number): number {
