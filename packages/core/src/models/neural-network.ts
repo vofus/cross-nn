@@ -42,6 +42,20 @@ export class NeuralNetwork {
 	}
 
 	/**
+	 * Сериализовать объект нейронной сети в JSON-строку
+	 */
+	public static serialize(): string {
+		throw new Error('Not implemented!');
+	}
+
+	/**
+	 * Десериализовать объект нейронной сети из JSON-строки
+	 */
+	public static deserialize(jsonString: string): NeuralNetwork {
+		throw new Error('Not implemented!');
+	}
+
+	/**
 	 * Constructor
 	 */
 	constructor(config: NeuralNetworkConfig) {

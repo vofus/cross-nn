@@ -1,12 +1,24 @@
 // @ts-ignore
 import mnist from 'mnist';
 import { NeuralNetwork } from '../src/models';
-import { NeuralNetworkConfig, TrainItem, LearningGradAlgorithm } from '../src/types';
+import { NeuralNetworkConfig, TrainItem, LearningGradAlgorithm, Activator } from '../src/types';
+import { serialize, deserialize } from '../src/utils';
+import { sigmoid } from '../src/activators';
 
 
-mnistTest();
+serializeTest();
+// mnistTest();
 // xorTest();
 
+function serializeTest() {
+	const sf = serialize<Activator>(sigmoid);
+	// const df = deserialize<Activator>(sf);
+
+	console.log('sigmoid: ', sigmoid.toString());
+	console.log('SF: ', sf);
+	// console.log('DF: ', df.toString());
+	// console.log('CALC: ', df(10));
+}
 
 function mnistTest() {
 	const nnConfig: NeuralNetworkConfig = {
