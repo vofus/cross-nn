@@ -58,9 +58,32 @@ export class NeuralNetwork {
 	}
 
 	/**
+	 * Опросить сеть
+	 */
+	public query(inputs: number[]): Matrix {
+		const inputMatrix = Matrix.fromArray([inputs]).resize([inputs.length, 1]);
+
+		return this.layers.reduce((input: Matrix, layer: Layer) => layer.calcOutputs(input), inputMatrix);
+	}
+
+	/**
 	 * Обучение сети при помощи градиентных алгоритмов обучения
 	 */
 	public gradAlgorithmTrain(algorithmType: LearningGradAlgorithm, trainSet: TrainItem[], epochs: number, reporter: TrainReporter = defaultTrainReporter) {
+		switch (algorithmType) {
+			case LearningGradAlgorithm.BACK_PROP:
+			case LearningGradAlgorithm.BACK_PROP_WITH_MOMENT:
+				this.gradAlgorithmBackPropTrain(trainSet, epochs, reporter);
+				break;
+			default:
+				break;
+		}
+	}
+
+	/**
+	 * Обучение сети при помощи градиентного алгоритма BACK_PROP / BACK_PROP_WITH_MOMENT
+	 */
+	private gradAlgorithmBackPropTrain(trainSet: TrainItem[], epochs: number, reporter: TrainReporter) {
 		let epochCounter = 0;
 
 		while (++epochCounter <= epochs) {
@@ -70,12 +93,15 @@ export class NeuralNetwork {
 
 			while (--trainCounter >= 0) {
 				const { inputs, targets } = shuffled[trainCounter];
+				const inputMatrix = Matrix.fromArray([inputs]).resize([inputs.length, 1]);
+				const targetMatrix = Matrix.fromArray([targets]).resize([targets.length, 1]);
 
-				const outputs = this.layers.reduce((inputMatrix: Matrix, layer: Layer) => {
-					return layer.calcOutputs(inputMatrix);
-				}, Matrix.fromArray([inputs]).T);
+				const outputMatrix = this.layers.reduce((input: Matrix, layer: Layer) => layer.calcOutputs(input), inputMatrix);
+				const errorMatrix = targetMatrix.subtract(outputMatrix);
 
-				// console.log('OUTPUT: ', outputs);
+				this.layers.reduceRight((error: Matrix, layer: Layer) => {
+					return layer.calcErrors(error);
+				}, errorMatrix);
 			}
 
 			reporter({
@@ -103,6 +129,7 @@ export class NeuralNetwork {
 				type,
 				layerSize: neuronCounts[i],
 				prevLayerSize: i > 0 ? neuronCounts[i - 1] : undefined,
+				moment: Boolean(moment) ? moment : NeuralNetwork.MOMENT_DEFAULT,
 				learningRate: isNumber(learningRate) ? learningRate : NeuralNetwork.LR_DEFAULT,
 				activator: typeof activator === 'function' ? activator : NeuralNetwork.ACTIVATOR_DEFAULT
 			};
