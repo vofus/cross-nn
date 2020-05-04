@@ -7,12 +7,16 @@ export class Layer {
 	private readonly TYPE: LayerType;
 	// Коэффициент обучения
 	private readonly LR: number;
+	// Момент
+	private readonly MOMENT: number;
 	// Функция активации,
 	// по умолчанию возвращает значение принимаемого аргумента
 	private readonly activator: Activator;
 	// Весовые коэффициенты между предыдущим и текущим слоями
 	// Для входного слоя эта матрица отсутствует
 	private weights: Matrix;
+	// Изменения весовых коэффициентов
+	private deltaWeights: Matrix;
 
 	/**
 	 * Инициализировать матрицу весовых коэффициентов
@@ -31,7 +35,7 @@ export class Layer {
 	 * Constructor
 	 */
 	constructor(config: LayerConfig) {
-		const {type, activator, layerSize, prevLayerSize, learningRate} = config;
+		const {type, activator, layerSize, prevLayerSize, learningRate, moment} = config;
 
 		if (type !== LayerType.INPUT && !Boolean(prevLayerSize)) {
 			throw new Error('For layer type HIDDEN or OUTPUT param prevLayerSize is required!');
@@ -39,6 +43,7 @@ export class Layer {
 
 		this.TYPE = type;
 		this.LR = learningRate;
+		this.MOMENT = moment;
 		this.weights = Layer.initWeight(layerSize, prevLayerSize);
 		this.activator = typeof activator === 'function' ? activator : (val) => val;
 	}
@@ -62,6 +67,12 @@ export class Layer {
 	 * @param errors {Matrix} - Матрица ошибок последующего слоя
 	 */
 	public calcErrors(errors: Matrix): Matrix {
-		return null;
+		if (this.TYPE === LayerType.INPUT) {
+			return null;
+		}
+
+		const prevLayerErrors = this.weights.dot(errors);
+
+		return prevLayerErrors;
 	}
 }

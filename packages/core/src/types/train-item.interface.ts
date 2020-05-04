@@ -1,4 +1,4 @@
 export interface TrainItem {
-	inputs: number[][];
-	targets: number[][];
+	inputs: number[];
+	targets: number[];
 }
