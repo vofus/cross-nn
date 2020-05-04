@@ -15,8 +15,12 @@ export class Layer {
 	// Весовые коэффициенты между предыдущим и текущим слоями
 	// Для входного слоя эта матрица отсутствует
 	private weights: Matrix;
-	// Изменения весовых коэффициентов
-	private deltaWeights: Matrix;
+	// Предыдущие изменения весовых коэффициентов
+	private prevDeltaWeights: Matrix;
+	// Закэшировать входящие и исходящие сигналы при прямом проходе,
+	// для того чтобы при обратном проходе рассчитать корректировку весовых коэффициентов
+	private inputs: Matrix;
+	private outputs: Matrix;
 
 	/**
 	 * Инициализировать матрицу весовых коэффициентов
@@ -57,9 +61,12 @@ export class Layer {
 			return inputs;
 		}
 
-		return this.weights
+		this.inputs = inputs;
+		this.outputs = this.weights
 			.dot(inputs)
 			.applyFunction(this.activator);
+
+		return this.outputs;
 	}
 
 	/**
@@ -71,7 +78,23 @@ export class Layer {
 			return null;
 		}
 
-		const prevLayerErrors = this.weights.dot(errors);
+		const prevLayerErrors = this.weights.T.dot(errors);
+		const ones = Matrix.fromParams(this.outputs.size, 1);
+		let deltaWeights = errors
+			.multiply(this.outputs)
+			.multiply(ones.subtract(this.outputs))
+			.dot(this.inputs.T)
+			.multiply(this.LR);
+
+		if (Boolean(this.prevDeltaWeights) && this.MOMENT !== 0) {
+			deltaWeights = deltaWeights.add(this.prevDeltaWeights.multiply(this.MOMENT));
+		}
+
+		if (this.MOMENT !== 0) {
+			this.prevDeltaWeights = deltaWeights;
+		}
+
+		this.weights = this.weights.add(deltaWeights);
 
 		return prevLayerErrors;
 	}

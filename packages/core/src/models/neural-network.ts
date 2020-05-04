@@ -58,6 +58,15 @@ export class NeuralNetwork {
 	}
 
 	/**
+	 * Опросить сеть
+	 */
+	public query(inputs: number[]): Matrix {
+		const inputMatrix = Matrix.fromArray([inputs]).resize([inputs.length, 1]);
+
+		return this.layers.reduce((input: Matrix, layer: Layer) => layer.calcOutputs(input), inputMatrix);
+	}
+
+	/**
 	 * Обучение сети при помощи градиентных алгоритмов обучения
 	 */
 	public gradAlgorithmTrain(algorithmType: LearningGradAlgorithm, trainSet: TrainItem[], epochs: number, reporter: TrainReporter = defaultTrainReporter) {
@@ -87,10 +96,12 @@ export class NeuralNetwork {
 				const inputMatrix = Matrix.fromArray([inputs]).resize([inputs.length, 1]);
 				const targetMatrix = Matrix.fromArray([targets]).resize([targets.length, 1]);
 
-				const outputs = this.layers.reduce((input: Matrix, layer: Layer) => layer.calcOutputs(input), inputMatrix);
-				const errors = targetMatrix.subtract(outputs);
+				const outputMatrix = this.layers.reduce((input: Matrix, layer: Layer) => layer.calcOutputs(input), inputMatrix);
+				const errorMatrix = targetMatrix.subtract(outputMatrix);
 
-				this.layers.reduceRight((error: Matrix, layer: Layer) => layer.calcErrors(errors), errors);
+				this.layers.reduceRight((error: Matrix, layer: Layer) => {
+					return layer.calcErrors(error);
+				}, errorMatrix);
 			}
 
 			reporter({
