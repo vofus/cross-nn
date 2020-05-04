@@ -99,6 +99,33 @@ export class Matrix {
 	}
 
 	/**
+	 * Изменить форму матрицы по заданным параметрам.
+	 * Доступно изменение на матрицу с таким же количеством элементов.
+	 */
+	public resize(size: MatrixSize): Matrix {
+		const condition = isMatrixSize(size)
+			&& (this.rows * this.cols) === (size[0] * size[1]);
+		let matrix: Matrix = null;
+
+		if (condition) {
+			matrix = new Matrix(size);
+
+			for (let rowIndex = 0; rowIndex < this.rows; ++rowIndex) {
+				for (let colIndex = 0; colIndex < this.cols; ++colIndex) {
+					const srcIndex = (rowIndex * this.cols) + colIndex;
+					const targetRowIndex = Math.floor(srcIndex / size[1]);
+					const targetColIndex = srcIndex % size[1];
+					const item = this.get(rowIndex, colIndex);
+
+					matrix.set(targetRowIndex, targetColIndex, item);
+				}
+			}
+		}
+
+		return matrix;
+	}
+
+	/**
 	 * Получить элемент матрицы
 	 */
 	public get(rowIndex: number, colIndex: number): number {
@@ -122,7 +149,7 @@ export class Matrix {
 	 * Скалярное произведение матриц
 	 */
 	public dot(matrix: Matrix): Matrix {
-		if (!this.validateMultiplyCompatible(matrix)) {
+		if (!this.validateDotCompatible(matrix)) {
 			return null;
 		}
 
@@ -146,10 +173,21 @@ export class Matrix {
 	 * Получить матрицу, в которой каждый элемент является
 	 * произведением элемента исходной матрицы и множителя
 	 */
-	public multiply(factor: number): Matrix {
+	public multiply(factor: Matrix | number): Matrix {
 		let matrix: Matrix = null;
 
-		if (isNumber(factor)) {
+		if (factor instanceof Matrix && this.validateSizeCompatible(factor)) {
+			matrix = new Matrix(this.size);
+
+			for (let rowIndex = 0; rowIndex < this.rows; ++rowIndex) {
+				for (let colIndex = 0; colIndex < this.cols; ++colIndex) {
+					const value = this.get(rowIndex, colIndex) * factor.get(rowIndex, colIndex);
+					matrix.set(rowIndex, colIndex, value);
+				}
+			}
+		}
+
+		if (typeof factor === 'number' && isNumber(factor)) {
 			matrix = new Matrix(this.size);
 
 			for (let rowIndex = 0; rowIndex < this.rows; ++rowIndex) {
@@ -233,7 +271,7 @@ export class Matrix {
 	/**
 	 * Проверить совместимость матрицы для перемножения
 	 */
-	private validateMultiplyCompatible(matrix: Matrix): boolean {
+	private validateDotCompatible(matrix: Matrix): boolean {
 		const size: MatrixSize = Boolean(matrix) ? matrix.size : null;
 
 		return isMatrixSize(size) && this.cols === size[0];
