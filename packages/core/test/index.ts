@@ -2,22 +2,55 @@
 import mnist from 'mnist';
 import { NeuralNetwork } from '../src/models';
 import { NeuralNetworkConfig, TrainItem, LearningGradAlgorithm, Activator } from '../src/types';
-import { serialize, deserialize } from '../src/utils';
+import { serializeFunction, deserializeFunction } from '../src/utils';
 import { sigmoid } from '../src/activators';
 
-
-serializeTest();
+serializeNN();
+// serializeTest();
 // mnistTest();
 // xorTest();
 
+function serializeNN() {
+	const nnConfig: NeuralNetworkConfig = {
+		neuronCounts: [2, 30, 50, 30, 1],
+		learningRate: 0.3,
+		moment: 0.3
+	};
+
+	const trainSet: TrainItem[] = [
+		{inputs: [0, 1], targets: [1]},
+		{inputs: [1, 0], targets: [1]},
+		{inputs: [0, 0], targets: [0]},
+		{inputs: [1, 1], targets: [0]}
+	];
+
+	const scaledTrainSet: TrainItem[] = [];
+	for (let i = 0; i < 100; ++i) {
+		scaledTrainSet.push(...trainSet);
+	}
+
+	const nn = new NeuralNetwork(nnConfig);
+	nn.gradAlgorithmTrain(LearningGradAlgorithm.BACK_PROP, scaledTrainSet, 10);
+
+	const sNN = NeuralNetwork.serialize(nn);
+	const dNN = NeuralNetwork.deserialize(sNN);
+
+	console.log(sNN);
+
+	console.log('[0, 1]: ', dNN.query([0, 1]));
+	console.log('[1, 0]: ', dNN.query([1, 0]));
+	console.log('[0, 0]: ', dNN.query([0, 0]));
+	console.log('[1, 1]: ', dNN.query([1, 1]));
+}
+
 function serializeTest() {
-	const sf = serialize<Activator>(sigmoid);
-	// const df = deserialize<Activator>(sf);
+	const sf = serializeFunction<Activator>(sigmoid);
+	const df = deserializeFunction<Activator>(sf);
 
 	console.log('sigmoid: ', sigmoid.toString());
 	console.log('SF: ', sf);
-	// console.log('DF: ', df.toString());
-	// console.log('CALC: ', df(10));
+	console.log('DF: ', df.toString());
+	console.log('CALC: ', df(10));
 }
 
 function mnistTest() {
@@ -73,7 +106,6 @@ function xorTest() {
 	const nn = new NeuralNetwork(nnConfig);
 	nn.gradAlgorithmTrain(LearningGradAlgorithm.BACK_PROP, scaledTrainSet, 10);
 
-// console.log('NN: ', nn);
 	console.log('[0, 1]: ', nn.query([0, 1]));
 	console.log('[1, 0]: ', nn.query([1, 0]));
 	console.log('[0, 0]: ', nn.query([0, 0]));

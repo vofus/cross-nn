@@ -44,21 +44,37 @@ export class NeuralNetwork {
 	/**
 	 * Сериализовать объект нейронной сети в JSON-строку
 	 */
-	public static serialize(): string {
-		throw new Error('Not implemented!');
+	public static serialize(nn: NeuralNetwork): string {
+		const serializedLayers = nn.layers.map((l) => Layer.serialize(l));
+
+		return JSON.stringify(serializedLayers);
 	}
 
 	/**
 	 * Десериализовать объект нейронной сети из JSON-строки
 	 */
 	public static deserialize(jsonString: string): NeuralNetwork {
-		throw new Error('Not implemented!');
+		const parsedLayers: Layer[] = JSON.parse(jsonString).map((l: any) => Layer.deserialize(l));
+
+		return new NeuralNetwork(parsedLayers);
 	}
 
 	/**
 	 * Constructor
 	 */
-	constructor(config: NeuralNetworkConfig) {
+	constructor(config: NeuralNetworkConfig | Layer[]) {
+		// Если переданы уже сконфигурированные слои,
+		// то принять их и выйти.
+		if (Array.isArray(config)) {
+			if (config.length < 2) {
+				throw new Error('');
+			}
+
+			this.layers = [...config];
+
+			return;
+		}
+
 		if (!NeuralNetwork.validateNeuronCounts(config.neuronCounts)) {
 			const error = [
 				'Length of neuronCounts option must be more or equal 2!',

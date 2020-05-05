@@ -1,11 +1,14 @@
 const PURE_FUNCTION_PATTERN = /function.*?\(/ims;
-const PURE_ARGS_PATTERN = /^function.*\((.*)\)(.*)$/ims;
-const PURE_BODY_PATTERN = /^function.*{(.*)}(.*)$/ims;
+const PURE_ARGS_PATTERN = /^function.*\((.*)\).*{.*}$/ims;
+const PURE_BODY_PATTERN = /^function.*{(.*)}.*$/ims;
 const ARROW_FUNCTION_PATTERN = /.*?=>.*?/ims;
 const ARGS_SEPARATOR = /\s*,\s*/i;
 const BRACERS_PATTERN = /[()]/img;
 
-export function serialize<T extends Function>(foo: T): string[] {
+/**
+ * Преобразовать функцию в массив аргументов для конструктора Function
+ */
+export function serializeFunction<T extends Function>(foo: T): string[] {
 	const fooSrc = foo.toString();
 	const result: string[] = [];
 
@@ -43,7 +46,10 @@ export function serialize<T extends Function>(foo: T): string[] {
 	return result;
 }
 
-export function deserialize<T extends Function>(fooParts: string[]): T {
+/**
+ * Создать функцию из массива аргументов
+ */
+export function deserializeFunction<T extends Function>(fooParts: string[]): T {
 	if (!Boolean(fooParts) || !Boolean(fooParts.length)) {
 		throw new Error('Function can not deserialize!');
 	}

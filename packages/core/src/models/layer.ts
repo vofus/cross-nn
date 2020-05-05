@@ -1,6 +1,6 @@
 import { Matrix } from '@cross-nn/matrix';
-import { isNumber } from '../utils';
 import { Activator, LayerConfig, LayerType } from '../types';
+import { isNumber, serializeFunction, deserializeFunction } from '../utils';
 
 export class Layer {
 	// Тип слоя
@@ -36,28 +36,25 @@ export class Layer {
 	}
 
 	/**
-	 * Сериализовать объект слоя нейронной сети в JSON-строку
+	 * Сериализовать объект слоя нейронной сети в JSON-объект
 	 */
-	public static serialize(layer: Layer): string {
-		const data = {
+	public static serialize(layer: Layer): any {
+		return {
 			type: layer.TYPE,
 			moment: layer.MOMENT,
 			learningRate: layer.LR,
-			activator: layer.activator.toString(),
+			activator: serializeFunction<Activator>(layer.activator),
 			inputs: Boolean(layer.inputs) ? layer.inputs.toArray() : null,
 			outputs: Boolean(layer.outputs) ? layer.outputs.toArray() : null,
 			weights: Boolean(layer.weights) ? layer.weights.toArray() : null,
 			prevDeltaWeights: Boolean(layer.prevDeltaWeights) ? layer.prevDeltaWeights.toArray() : null,
 		};
-
-		return JSON.stringify(data);
 	}
 
 	/**
-	 * Десериализовать объект слоя нейронной сети из JSON-строки
+	 * Десериализовать объект слоя нейронной сети из JSON-объекта
 	 */
-	public static deserialize(jsonString: string): Layer {
-		const parsed = JSON.parse(jsonString);
+	public static deserialize(parsed: any): Layer {
 		const layer = new Layer();
 
 		layer.LR = parsed.learningRate;
@@ -67,6 +64,7 @@ export class Layer {
 		layer.outputs = Matrix.fromArray(parsed.outputs);
 		layer.weights = Matrix.fromArray(parsed.weights);
 		layer.prevDeltaWeights = Matrix.fromArray(parsed.prevDeltaWeights);
+		layer.activator = deserializeFunction<Activator>(parsed.activator);
 
 		return layer;
 	}
