@@ -1,6 +1,6 @@
 {
   "name": "@cross-nn/core",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Core module of cross-platform neural network",
   "main": "./dist/src/core.js",
   "typings": "./dist/src/core.d.ts",
