@@ -1,17 +1,17 @@
 import { Matrix } from '@cross-nn/matrix';
-import { isNumber } from '../utils';
 import { Activator, LayerConfig, LayerType } from '../types';
+import { isNumber, serializeFunction, deserializeFunction } from '../utils';
 
 export class Layer {
 	// Тип слоя
-	private readonly TYPE: LayerType;
+	private TYPE: LayerType;
 	// Коэффициент обучения
-	private readonly LR: number;
+	private LR: number;
 	// Момент
-	private readonly MOMENT: number;
+	private MOMENT: number;
 	// Функция активации,
 	// по умолчанию возвращает значение принимаемого аргумента
-	private readonly activator: Activator;
+	private activator: Activator;
 	// Весовые коэффициенты между предыдущим и текущим слоями
 	// Для входного слоя эта матрица отсутствует
 	private weights: Matrix;
@@ -36,20 +36,56 @@ export class Layer {
 	}
 
 	/**
+	 * Сериализовать объект слоя нейронной сети в JSON-объект
+	 */
+	public static serialize(layer: Layer): any {
+		return {
+			type: layer.TYPE,
+			moment: layer.MOMENT,
+			learningRate: layer.LR,
+			activator: serializeFunction<Activator>(layer.activator),
+			inputs: Boolean(layer.inputs) ? layer.inputs.toArray() : null,
+			outputs: Boolean(layer.outputs) ? layer.outputs.toArray() : null,
+			weights: Boolean(layer.weights) ? layer.weights.toArray() : null,
+			prevDeltaWeights: Boolean(layer.prevDeltaWeights) ? layer.prevDeltaWeights.toArray() : null,
+		};
+	}
+
+	/**
+	 * Десериализовать объект слоя нейронной сети из JSON-объекта
+	 */
+	public static deserialize(parsed: any): Layer {
+		const layer = new Layer();
+
+		layer.LR = parsed.learningRate;
+		layer.TYPE = parsed.type;
+		layer.MOMENT = parsed.moment;
+		layer.inputs = Matrix.fromArray(parsed.inputs);
+		layer.outputs = Matrix.fromArray(parsed.outputs);
+		layer.weights = Matrix.fromArray(parsed.weights);
+		layer.prevDeltaWeights = Matrix.fromArray(parsed.prevDeltaWeights);
+		layer.activator = deserializeFunction<Activator>(parsed.activator);
+
+		return layer;
+	}
+
+	/**
 	 * Constructor
 	 */
-	constructor(config: LayerConfig) {
-		const {type, activator, layerSize, prevLayerSize, learningRate, moment} = config;
+	constructor(config?: LayerConfig) {
+		if (Boolean(config)) {
+			const {type, activator, layerSize, prevLayerSize, learningRate, moment} = config;
 
-		if (type !== LayerType.INPUT && !Boolean(prevLayerSize)) {
-			throw new Error('For layer type HIDDEN or OUTPUT param prevLayerSize is required!');
+			if (type !== LayerType.INPUT && !Boolean(prevLayerSize)) {
+				throw new Error('For layer type HIDDEN or OUTPUT param prevLayerSize is required!');
+			}
+
+			this.TYPE = type;
+			this.LR = learningRate;
+			this.MOMENT = moment;
+			this.weights = Layer.initWeight(layerSize, prevLayerSize);
+			this.activator = typeof activator === 'function' ? activator : (val) => val;
 		}
-
-		this.TYPE = type;
-		this.LR = learningRate;
-		this.MOMENT = moment;
-		this.weights = Layer.initWeight(layerSize, prevLayerSize);
-		this.activator = typeof activator === 'function' ? activator : (val) => val;
 	}
 
 	/**

@@ -1,4 +1,5 @@
 import { Activator } from './activator.interface';
+import { Layer } from '../models';
 
 export interface NeuralNetworkConfig {
 	// Количество нейронов в каждом слое
