@@ -34,22 +34,36 @@ export class BrowserAdapter {
 	public async gradAlgorithmTrainAsync(nn: NeuralNetwork, algorithmType: LearningGradAlgorithm, trainSet: TrainItem[], epochs: number): Promise<NeuralNetwork> {
 		const message = gradAlgorithmTrainMessageCreator(nn, algorithmType, trainSet, epochs);
 
-		return new Promise((resolve, reject) => {
+		const promise = new Promise<NeuralNetwork>((resolve, reject) => {
 			const handler = (e: MessageEvent) => {
-				const response: GradAlgorithmTrainMessage = e.data;
+				try {
+					const response: GradAlgorithmTrainMessage = e.data;
+					console.log('RESPONSE: ', response);
 
-				if (Boolean(response) && response.id === message.id) {
-					if (Boolean(response.serializedNetwork)) {
-						resolve(NeuralNetwork.deserialize(response.serializedNetwork));
-					} else {
-						reject();
+					if (Boolean(response) && response.id === message.id) {
+						if (Boolean(response.serializedNetwork)) {
+							resolve(NeuralNetwork.deserialize(response.serializedNetwork));
+						} else {
+							reject();
+						}
+
+						navigator.serviceWorker.removeEventListener('message', handler);
 					}
-
+				} catch (err) {
+					console.error(err);
+					reject();
 					navigator.serviceWorker.removeEventListener('message', handler);
 				}
 			};
 
 			navigator.serviceWorker.addEventListener('message', handler);
 		});
+
+		return (Boolean(this.worker) ? Promise.resolve() : this.register())
+			.then(() => {
+				this.worker.postMessage(message);
+
+				return promise;
+			});
 	}
 }

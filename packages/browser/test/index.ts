@@ -35,9 +35,9 @@ function xorTest() {
 		scaledTrainSet,
 		10
 	).then((nn) => {
-		console.log('[0, 1]: ', nn.query([0, 1]));
-		console.log('[1, 0]: ', nn.query([1, 0]));
-		console.log('[0, 0]: ', nn.query([0, 0]));
-		console.log('[1, 1]: ', nn.query([1, 1]));
+		console.log('[0, 1]: ', nn.query([0, 1]).toArray());
+		console.log('[1, 0]: ', nn.query([1, 0]).toArray());
+		console.log('[0, 0]: ', nn.query([0, 0]).toArray());
+		console.log('[1, 1]: ', nn.query([1, 1]).toArray());
 	});
 }
