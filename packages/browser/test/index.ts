@@ -8,7 +8,7 @@ xorTest();
 
 
 function xorTest() {
-	const adapter = new BrowserAdapter();
+	const adapter = new BrowserAdapter(2);
 
 	const nnConfig: NeuralNetworkConfig = {
 		neuronCounts: [2, 30, 50, 30, 1],
@@ -28,18 +28,20 @@ function xorTest() {
 		scaledTrainSet.push(...trainSet);
 	}
 
-	adapter.gradAlgorithmTrainAsync(
-		new NeuralNetwork(nnConfig),
-		LearningGradAlgorithm.BACK_PROP,
-		scaledTrainSet,
-		10
-	).then((nn) => {
-		console.log('[0, 1]: ', nn.query([0, 1]).toArray());
-		console.log('[1, 0]: ', nn.query([1, 0]).toArray());
-		console.log('[0, 0]: ', nn.query([0, 0]).toArray());
-		console.log('[1, 1]: ', nn.query([1, 1]).toArray());
-	})
-		.catch(console.error);
+	for (let i = 0; i < 2; ++i) {
+		adapter.gradAlgorithmTrainAsync(
+			new NeuralNetwork(nnConfig),
+			LearningGradAlgorithm.BACK_PROP,
+			scaledTrainSet,
+			10
+		).then((nn) => {
+			console.log('=== ' + i + ' ===' + '[0, 1]: ', nn.query([0, 1]).toArray());
+			console.log('=== ' + i + ' ===' + '[1, 0]: ', nn.query([1, 0]).toArray());
+			console.log('=== ' + i + ' ===' + '[0, 0]: ', nn.query([0, 0]).toArray());
+			console.log('=== ' + i + ' ===' + '[1, 1]: ', nn.query([1, 1]).toArray());
+		})
+			.catch(console.error);
+	}
 }
 
 function loadTest() {
