@@ -1,6 +1,6 @@
 {
   "name": "@cross-nn/browser",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Browser module of cross-platform neural network",
   "main": "./dist/browser.js",
   "typings": "./dist/browser.d.ts",

@@ -1,43 +1,42 @@
-import { GradAlgorithmTrainBody, MessageAction, MessageType, TrainMessage } from './types';
 import { NeuralNetwork } from '@cross-nn/core';
-
-const scope = self as any as ServiceWorkerGlobalScope;
-
-scope.addEventListener('install', (e) => {
-	console.log('FROM_SW__INSTALL: ', e);
-});
-
-scope.addEventListener('activate', (e) => {
-	console.log('FROM_SW__ACTIVATE: ', e);
-});
+import { WorkerTask, WorkerTaskStatus } from './worker-pull';
+import { GradAlgorithmTrainBody, MessageAction, MessageType, TrainMessage } from './types';
 
 /**
  * Обработчик сообщений от основного потока
  */
-scope.addEventListener('message', async (e: ExtendableMessageEvent<TrainMessage>) => {
-	const client = await scope.clients.get((e.source as Client).id);
-	const condition = Boolean(client)
-		&& Boolean(e.data)
-		&& Boolean(e.data.action)
-		&& e.data.type === MessageType.REQUEST;
+self.onmessage = async (e: MessageEvent) => {
+	const task: WorkerTask<TrainMessage> = e.data;
+
+	const condition = Boolean(task)
+		&& Boolean(task.message)
+		&& Boolean(task.message.action)
+		&& task.message.type === MessageType.REQUEST;
 
 	if (condition) {
-		switch (e.data.action) {
-			case MessageAction.TRAIN_GRAD_ALGORITHM: gradAlgorithmTrain(e.data, client); break;
+		switch (task.message.action) {
+			case MessageAction.TRAIN_GRAD_ALGORITHM: gradAlgorithmTrain(task); break;
 			default: break;
 		}
 	}
-});
+};
 
 /**
  * Запустить обучение нейронной сети градиентным алгоритмом
  */
-function gradAlgorithmTrain(message: TrainMessage<GradAlgorithmTrainBody>, client: Client) {
+function gradAlgorithmTrain(task: WorkerTask<TrainMessage<GradAlgorithmTrainBody>>) {
+	const message = task.message;
 	const condition = Boolean(message)
 		&& Boolean(message.body)
 		&& Boolean(message.body.serializedNetwork)
 		&& Array.isArray(message.body.args)
 		&& message.body.args.length >= 3;
+
+	const dummyTask: WorkerTask<TrainMessage<GradAlgorithmTrainBody>> = {
+		id: task.id,
+		status: WorkerTaskStatus.COMPLETE,
+		message: null
+	};
 
 	const dummyMessage: TrainMessage = {
 		id: message.id,
@@ -47,7 +46,8 @@ function gradAlgorithmTrain(message: TrainMessage<GradAlgorithmTrainBody>, clien
 	};
 
 	if (!condition) {
-		return client.postMessage(dummyMessage);
+		// @ts-ignore
+		return postMessage({...dummyTask, message: dummyMessage});
 	}
 
 	try {
@@ -66,9 +66,11 @@ function gradAlgorithmTrain(message: TrainMessage<GradAlgorithmTrainBody>, clien
 		};
 
 		// Отправить сообщение в основной поток
-		client.postMessage(response);
+		// @ts-ignore
+		postMessage({...dummyTask, message: response});
 	} catch (err) {
+		// @ts-ignore
+		postMessage({...dummyTask, message: dummyMessage});
 		console.error(err);
-		client.postMessage(dummyMessage);
 	}
 }

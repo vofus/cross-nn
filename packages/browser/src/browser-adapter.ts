@@ -1,9 +1,15 @@
 import { LearningGradAlgorithm, NeuralNetwork, TrainItem } from '@cross-nn/core';
 import { GradAlgorithmTrainBody, MessageType, TrainMessage } from './types';
 import { gradAlgorithmTrainMessageCreator } from './message-creators';
+import { WorkerPull, WorkerTask, WorkerTaskStatus } from './worker-pull';
+import { guid } from './utils';
 
 export class BrowserAdapter {
-	private worker: ServiceWorker = null;
+	private workerPull: WorkerPull = null;
+
+	constructor(workerPullSize: number = 1) {
+		this.workerPull = new WorkerPull('worker.ts', workerPullSize);
+	}
 
 	/**
 	 * Загрузить нейронную сеть из файла
@@ -28,44 +34,50 @@ export class BrowserAdapter {
 	 * Запустить обучение градиентными алгоритмами в ServiceWorker
 	 * @TODO требуется рефакторинг
 	 */
-	public async gradAlgorithmTrainAsync(nn: NeuralNetwork, algorithmType: LearningGradAlgorithm, trainSet: TrainItem[], epochs: number): Promise<NeuralNetwork> {
+	public async gradAlgorithmTrainAsync(
+		nn: NeuralNetwork,
+		algorithmType: LearningGradAlgorithm,
+		trainSet: TrainItem[],
+		epochs: number
+	): Promise<NeuralNetwork> {
 		const message = gradAlgorithmTrainMessageCreator(nn, algorithmType, trainSet, epochs);
+		const task: WorkerTask<TrainMessage> = {
+			id: guid(),
+			status: WorkerTaskStatus.WAITING,
+			message
+		};
 
 		const promise = new Promise<NeuralNetwork>((resolve, reject) => {
-			const handler = (e: MessageEvent) => {
-				try {
-					const response: TrainMessage<GradAlgorithmTrainBody> = e.data;
-					const condition = Boolean(response)
-						&& response.id === message.id
-						&& response.type === MessageType.RESPONSE;
+			const subscription = this.workerPull.messages
+				.subscribe((task: WorkerTask<TrainMessage<GradAlgorithmTrainBody>>) => {
+					try {
+						const response = task.message;
+						const condition = Boolean(response)
+							&& response.id === message.id
+							&& response.type === MessageType.RESPONSE;
 
-					if (condition) {
-						const body = response.body;
+						if (condition) {
+							const body = response.body;
 
-						if (Boolean(body.serializedNetwork)) {
-							resolve(NeuralNetwork.deserialize(body.serializedNetwork));
-						} else {
-							reject();
+							if (Boolean(body.serializedNetwork)) {
+								resolve(NeuralNetwork.deserialize(body.serializedNetwork));
+							} else {
+								reject();
+							}
+
+							subscription.unsubscribe();
 						}
-
-						navigator.serviceWorker.removeEventListener('message', handler);
+					} catch (err) {
+						console.error(err);
+						reject();
+						subscription.unsubscribe();
 					}
-				} catch (err) {
-					console.error(err);
-					reject();
-					navigator.serviceWorker.removeEventListener('message', handler);
-				}
-			};
-
-			navigator.serviceWorker.addEventListener('message', handler);
+				});
 		});
 
-		return (Boolean(this.worker) ? Promise.resolve() : this.register())
-			.then(() => {
-				this.worker.postMessage(message);
+		this.workerPull.addTaskToQueue(task);
 
-				return promise;
-			});
+		return promise;
 	}
 
 	/**
@@ -86,19 +98,5 @@ export class BrowserAdapter {
 				input.files = null;
 			}
 		});
-	}
-
-	/**
-	 * Зарегистрировать и обновить ServiceWorker
-	 */
-	private register(): Promise<any> {
-		return navigator.serviceWorker
-			// DEV: worker.ts; PROD: worker.js;
-			.register('worker.js')
-			.then((event) => {
-				this.worker = event.active;
-
-				return event.update();
-			});
 	}
 }
