@@ -98,8 +98,8 @@ interface SyncEvent extends ExtendableEvent {
 	tag: string;
 }
 
-interface ExtendableMessageEvent extends ExtendableEvent {
-	data: any;
+interface ExtendableMessageEvent<T = any> extends ExtendableEvent {
+	data: T;
 	source: Client|Object;
 }
 
