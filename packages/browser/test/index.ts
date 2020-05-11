@@ -8,7 +8,8 @@ xorTest();
 
 
 function xorTest() {
-	const adapter = new BrowserAdapter(2);
+	const adapter = new BrowserAdapter(3);
+	const epochCount = 10;
 
 	const nnConfig: NeuralNetworkConfig = {
 		neuronCounts: [2, 30, 50, 30, 1],
@@ -28,17 +29,29 @@ function xorTest() {
 		scaledTrainSet.push(...trainSet);
 	}
 
-	for (let i = 0; i < 2; ++i) {
+
+	for (let i = 0; i < 4; ++i) {
+		const statusElement = document.getElementById('status_' + i);
+
 		adapter.gradAlgorithmTrainAsync(
 			new NeuralNetwork(nnConfig),
 			LearningGradAlgorithm.BACK_PROP,
 			scaledTrainSet,
-			10
+			epochCount,
+			({epochNumber, epochTime}) => {
+				const percent = Math.ceil((epochNumber/epochCount) * 100);
+
+				if (Boolean(statusElement)) {
+					statusElement.style.width = `${percent}%`;
+				}
+
+				console.log('=== ' + i + ' === ' + `Complete percent: ${percent}% (${epochTime}ms)`);
+			}
 		).then((nn) => {
-			console.log('=== ' + i + ' ===' + '[0, 1]: ', nn.query([0, 1]).toArray());
-			console.log('=== ' + i + ' ===' + '[1, 0]: ', nn.query([1, 0]).toArray());
-			console.log('=== ' + i + ' ===' + '[0, 0]: ', nn.query([0, 0]).toArray());
-			console.log('=== ' + i + ' ===' + '[1, 1]: ', nn.query([1, 1]).toArray());
+			console.log('=== ' + i + ' ===' + '[0, 1]: ', nn.query([0, 1]).toArray()[0]);
+			console.log('=== ' + i + ' ===' + '[1, 0]: ', nn.query([1, 0]).toArray()[0]);
+			console.log('=== ' + i + ' ===' + '[0, 0]: ', nn.query([0, 0]).toArray()[0]);
+			console.log('=== ' + i + ' ===' + '[1, 1]: ', nn.query([1, 1]).toArray()[0]);
 		})
 			.catch(console.error);
 	}

@@ -6,10 +6,68 @@
 				content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
 	<meta http-equiv="X-UA-Compatible" content="ie=edge">
 	<title>@cross-nn/browser</title>
+
+	<style>
+		.block {
+			box-sizing: border-box;
+			background-color: #89838a;
+			padding: 20px 32px;
+			margin-bottom: 16px;
+		}
+
+		.status-container {
+			position: relative;
+			box-sizing: border-box;
+			width: 300px;
+			height: 16px;
+			border-radius: 8px;
+			overflow: hidden;
+			background-color: #fff;
+		}
+
+		.status {
+			position: absolute;
+			top: 0;
+			left: 0;
+			bottom: 0;
+			box-sizing: border-box;
+			width: 0;
+			background-color: #50ff51;
+			transition: width 0.175s linear;
+		}
+	</style>
 </head>
 <body>
 
 	<h1>@cross-nn/browser</h1>
+
+	<br>
+	<hr>
+	<br>
+
+	<div class="block">
+		<div class="status-container">
+			<div id="status_0" class="status"></div>
+		</div>
+	</div>
+
+	<div class="block">
+		<div class="status-container">
+			<div id="status_1" class="status"></div>
+		</div>
+	</div>
+
+	<div class="block">
+		<div class="status-container">
+			<div id="status_2" class="status"></div>
+		</div>
+	</div>
+
+	<div class="block">
+		<div class="status-container">
+			<div id="status_3" class="status"></div>
+		</div>
+	</div>
 
 	<br>
 	<hr>

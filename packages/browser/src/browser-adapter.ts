@@ -1,14 +1,15 @@
 import { LearningGradAlgorithm, NeuralNetwork, TrainItem } from '@cross-nn/core';
-import { GradAlgorithmTrainBody, MessageType, TrainMessage } from './types';
-import { gradAlgorithmTrainMessageCreator } from './message-creators';
-import { WorkerPull, WorkerTask, WorkerTaskStatus } from './worker-pull';
-import { guid } from './utils';
+import { GradAlgorithmTrainBody, Message, MessageAction, MessageType } from './types';
+import { WorkerPull, WorkerTask, workerTaskCreator, WorkerTaskStatus } from './worker-pull';
+import { gradAlgorithmRequestCreator } from './message-creators';
+import { TrainReporter } from '../../core/src/types';
+import { defaultTrainReporter } from '../../core/src/reporters';
 
 export class BrowserAdapter {
 	private workerPull: WorkerPull = null;
 
 	constructor(workerPullSize: number = 1) {
-		this.workerPull = new WorkerPull('worker.ts', workerPullSize);
+		this.workerPull = new WorkerPull(workerPullSize);
 	}
 
 	/**
@@ -38,22 +39,35 @@ export class BrowserAdapter {
 		nn: NeuralNetwork,
 		algorithmType: LearningGradAlgorithm,
 		trainSet: TrainItem[],
-		epochs: number
+		epochs: number,
+		reporter: TrainReporter = defaultTrainReporter
 	): Promise<NeuralNetwork> {
-		const message = gradAlgorithmTrainMessageCreator(nn, algorithmType, trainSet, epochs);
-		const task: WorkerTask<TrainMessage> = {
-			id: guid(),
-			status: WorkerTaskStatus.WAITING,
-			message
-		};
+		const message = gradAlgorithmRequestCreator(nn, algorithmType, trainSet, epochs);
+		const task = workerTaskCreator(message);
+
+		const statusSubscription = this.workerPull.messages
+			.subscribe((t: WorkerTask<Message>) => {
+				const condition = Boolean(t)
+					&& t.id === task.id
+					&& t.status === WorkerTaskStatus.RUNNING
+					&& Boolean(t.message)
+					&& t.message.type === MessageType.RESPONSE
+					&& t.message.action === MessageAction.TRAIN_GRAD_ALGORITHM_STATUS;
+
+				if (condition) {
+					reporter(t.message.body);
+				}
+			});
 
 		const promise = new Promise<NeuralNetwork>((resolve, reject) => {
 			const subscription = this.workerPull.messages
-				.subscribe((task: WorkerTask<TrainMessage<GradAlgorithmTrainBody>>) => {
+				.subscribe((receivedTask: WorkerTask<Message<GradAlgorithmTrainBody>>) => {
 					try {
-						const response = task.message;
+						const response = receivedTask.message;
 						const condition = Boolean(response)
-							&& response.id === message.id
+							&& receivedTask.id === task.id
+							&& receivedTask.status === WorkerTaskStatus.COMPLETE
+							&& response.action === MessageAction.TRAIN_GRAD_ALGORITHM
 							&& response.type === MessageType.RESPONSE;
 
 						if (condition) {
@@ -66,11 +80,13 @@ export class BrowserAdapter {
 							}
 
 							subscription.unsubscribe();
+							statusSubscription.unsubscribe();
 						}
 					} catch (err) {
 						console.error(err);
 						reject();
 						subscription.unsubscribe();
+						statusSubscription.unsubscribe();
 					}
 				});
 		});

@@ -1,12 +1,12 @@
-import { NeuralNetwork } from '@cross-nn/core';
+import { NeuralNetwork, TrainMessage, TrainReporter } from '@cross-nn/core';
 import { WorkerTask, WorkerTaskStatus } from './worker-pull';
-import { GradAlgorithmTrainBody, MessageAction, MessageType, TrainMessage } from './types';
+import { GradAlgorithmTrainBody, Message, MessageAction, MessageType } from './types';
 
 /**
  * Обработчик сообщений от основного потока
  */
 self.onmessage = async (e: MessageEvent) => {
-	const task: WorkerTask<TrainMessage> = e.data;
+	const task: WorkerTask<Message> = e.data;
 
 	const condition = Boolean(task)
 		&& Boolean(task.message)
@@ -24,7 +24,7 @@ self.onmessage = async (e: MessageEvent) => {
 /**
  * Запустить обучение нейронной сети градиентным алгоритмом
  */
-function gradAlgorithmTrain(task: WorkerTask<TrainMessage<GradAlgorithmTrainBody>>) {
+function gradAlgorithmTrain(task: WorkerTask<Message<GradAlgorithmTrainBody>>) {
 	const message = task.message;
 	const condition = Boolean(message)
 		&& Boolean(message.body)
@@ -32,14 +32,13 @@ function gradAlgorithmTrain(task: WorkerTask<TrainMessage<GradAlgorithmTrainBody
 		&& Array.isArray(message.body.args)
 		&& message.body.args.length >= 3;
 
-	const dummyTask: WorkerTask<TrainMessage<GradAlgorithmTrainBody>> = {
+	const dummyTask: WorkerTask<Message<GradAlgorithmTrainBody>> = {
 		id: task.id,
 		status: WorkerTaskStatus.COMPLETE,
 		message: null
 	};
 
-	const dummyMessage: TrainMessage = {
-		id: message.id,
+	const dummyMessage: Message = {
 		type: MessageType.RESPONSE,
 		action: message.action,
 		body: null
@@ -54,11 +53,11 @@ function gradAlgorithmTrain(task: WorkerTask<TrainMessage<GradAlgorithmTrainBody
 		const nn = NeuralNetwork.deserialize(message.body.serializedNetwork);
 
 		// @ts-ignore
-		nn.gradAlgorithmTrain(...message.body.args);
+		nn.gradAlgorithmTrain(...message.body.args, gradAlgorithmTrainReporter(task));
 
 		// Сериализация сети и подготовка сообщения
 		const serializedNetwork = NeuralNetwork.serialize(nn);
-		const response: TrainMessage<GradAlgorithmTrainBody> = {
+		const response: Message<GradAlgorithmTrainBody> = {
 			...dummyMessage,
 			body: {
 				serializedNetwork
@@ -67,10 +66,32 @@ function gradAlgorithmTrain(task: WorkerTask<TrainMessage<GradAlgorithmTrainBody
 
 		// Отправить сообщение в основной поток
 		// @ts-ignore
-		postMessage({...dummyTask, message: response});
+		self.postMessage({...dummyTask, message: response});
 	} catch (err) {
 		// @ts-ignore
-		postMessage({...dummyTask, message: dummyMessage});
+		self.postMessage({...dummyTask, message: dummyMessage});
 		console.error(err);
 	}
+}
+
+/**
+ * Создание функции уведомления о статусе задачи
+ */
+function gradAlgorithmTrainReporter(sourceTask: WorkerTask): TrainReporter {
+	const worker = self;
+
+	return (message: TrainMessage) => {
+		const task: WorkerTask<Message<TrainMessage>> = {
+			id: sourceTask.id,
+			status: WorkerTaskStatus.RUNNING,
+			message: {
+				type: MessageType.RESPONSE,
+				action: MessageAction.TRAIN_GRAD_ALGORITHM_STATUS,
+				body: message
+			}
+		};
+
+		// @ts-ignore
+		worker.postMessage(task);
+	};
 }

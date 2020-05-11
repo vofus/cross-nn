@@ -9,17 +9,17 @@ export class WorkerPull {
 	private workerThreads: WorkerThread[] = [];
 	public messages = new Subject();
 
-	constructor(workerUrl: string, size: number = 1) {
-		this.initWorkerThreads(workerUrl, size);
+	constructor(size: number = 1) {
+		this.initWorkerThreads(size);
 	}
 
 	/**
 	 * Инициализировать пулл воркеров
 	 */
-	private initWorkerThreads(workerUrl: string, size: number = 1) {
+	private initWorkerThreads(size: number = 1) {
 		for (let i = 0; i < size; ++i) {
 			const thread: WorkerThread = {
-				worker: new Worker(workerUrl),
+				worker: new Worker('../worker.js'),
 				// worker: new Worker('../worker.ts'),
 				status: WorkerThreadStatus.IDLE
 			};
@@ -32,6 +32,8 @@ export class WorkerPull {
 					thread.status = WorkerThreadStatus.IDLE;
 					this.takeTaskFromQueue();
 				}
+
+				// console.log(this.workerThreads.map((t) => t.status));
 			};
 
 			thread.worker.onerror = (err) => {
@@ -71,6 +73,7 @@ export class WorkerPull {
 			return;
 		}
 
+		task.status = WorkerTaskStatus.RUNNING;
 		idleThread.status = WorkerThreadStatus.RUNNING;
 		idleThread.worker.postMessage(task);
 	}
