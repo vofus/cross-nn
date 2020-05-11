@@ -1,7 +1,7 @@
 import { NeuralNetwork } from '@cross-nn/core';
-import { GradAlgorithmTrainBody, MessageAction, MessageType, TrainMessage } from '../types';
+import { GradAlgorithmTrainBody, MessageAction, MessageType, Message } from '../types';
 
-export function gradAlgorithmRequestCreator(nn: NeuralNetwork, ...args: any[]): TrainMessage<GradAlgorithmTrainBody> {
+export function gradAlgorithmRequestCreator(nn: NeuralNetwork, ...args: any[]): Message<GradAlgorithmTrainBody> {
 	const body: GradAlgorithmTrainBody = {
 		serializedNetwork: NeuralNetwork.serialize(nn),
 		args
