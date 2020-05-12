@@ -1,9 +1,7 @@
-import { LearningGradAlgorithm, NeuralNetwork, TrainItem } from '@cross-nn/core';
+import { LearningGradAlgorithm, NeuralNetwork, TrainItem, TrainReporter, defaultTrainReporter } from '@cross-nn/core';
 import { GradAlgorithmTrainBody, Message, MessageAction, MessageType } from './types';
 import { WorkerPull, WorkerTask, workerTaskCreator, WorkerTaskStatus } from './worker-pull';
 import { gradAlgorithmRequestCreator } from './message-creators';
-import { TrainReporter } from '../../core/src/types';
-import { defaultTrainReporter } from '../../core/src/reporters';
 
 export class BrowserAdapter {
 	private workerPull: WorkerPull = null;
