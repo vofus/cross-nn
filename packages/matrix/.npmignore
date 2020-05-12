@@ -5,5 +5,3 @@ dist/test/
 .idea/
 .vscode/
 tsconfig.json
-launch.json
-nodemon.json

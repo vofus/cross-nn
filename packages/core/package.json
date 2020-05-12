@@ -1,6 +1,6 @@
 {
   "name": "@cross-nn/core",
-  "version": "0.0.5",
+  "version": "0.0.7",
   "description": "Core module of cross-platform neural network",
   "main": "./dist/src/core.js",
   "typings": "./dist/src/core.d.ts",
@@ -25,7 +25,7 @@
     "test": "npm run watch & npm run watch-node-test"
   },
   "dependencies": {
-    "@cross-nn/matrix": "0.0.5",
+    "@cross-nn/matrix": "~0.0.6",
     "mnist": "^1.1.0"
   },
   "devDependencies": {
