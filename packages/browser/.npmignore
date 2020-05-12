@@ -5,3 +5,4 @@ dist/test/
 .idea/
 .vscode/
 .cache/
+tsconfig.json

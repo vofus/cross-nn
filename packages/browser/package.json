@@ -1,6 +1,6 @@
 {
   "name": "@cross-nn/browser",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Browser module of cross-platform neural network",
   "main": "./dist/browser.js",
   "typings": "./dist/browser.d.ts",
@@ -23,7 +23,7 @@
     "dev": "npm run clean && parcel serve test/index.html --out-dir dist/test"
   },
   "dependencies": {
-    "@cross-nn/core": "~0.0.5"
+    "@cross-nn/core": "~0.0.7"
   },
   "devDependencies": {
     "parcel-bundler": "^1.12.4",
