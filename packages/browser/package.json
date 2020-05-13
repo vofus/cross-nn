@@ -1,9 +1,9 @@
 {
   "name": "@cross-nn/browser",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Browser module of cross-platform neural network",
   "main": "./dist/browser.js",
-  "typings": "./dist/browser.d.ts",
+  "typings": "./@types/browser.d.ts",
   "author": "Andrey Vasin <vofuss@gmail.com>",
   "license": "MIT",
   "private": false,
@@ -16,14 +16,16 @@
     "directory": "packages/browser"
   },
   "scripts": {
-    "prepare": "npm run build",
+    "prepare": "npm run build && npm run build:typings",
     "watch": "npm run clean && tsc -w",
-    "build": "npm run clean && tsc",
+    "build:typings": "rimraf @types && tsc --emitDeclarationOnly -p typings.tsconfig.json",
+    "build": "npm run clean && parcel build src/*.ts --out-dir dist",
     "clean": "rimraf dist",
     "dev": "npm run clean && parcel watch test/nn-worker.ts --out-dir dist/test --out-file nn-worker.js & parcel serve test/index.html --out-dir dist/test"
   },
   "dependencies": {
-    "@cross-nn/core": "~0.0.7"
+    "@cross-nn/core": "~0.0.7",
+    "tslib": "^1.12.0"
   },
   "devDependencies": {
     "parcel-bundler": "^1.12.4",
