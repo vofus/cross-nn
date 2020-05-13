@@ -1,5 +1,6 @@
 import { BrowserAdapter } from '../src/browser';
 import { NeuralNetwork, LearningGradAlgorithm, NeuralNetworkConfig, TrainItem } from '@cross-nn/core';
+const WORKER_URL = 'nn-worker.js';
 
 // TESTS
 xorTest();
@@ -8,7 +9,7 @@ xorTest();
 
 
 function xorTest() {
-	const adapter = new BrowserAdapter(3);
+	const adapter = new BrowserAdapter(WORKER_URL,3);
 	const epochCount = 10;
 
 	const nnConfig: NeuralNetworkConfig = {
@@ -58,7 +59,7 @@ function xorTest() {
 }
 
 function loadTest() {
-	const adapter = new BrowserAdapter();
+	const adapter = new BrowserAdapter(WORKER_URL);
 	const button = document.getElementById('button-load-nn');
 
 	if (!Boolean(button)) {
@@ -81,7 +82,7 @@ function loadTest() {
 }
 
 function saveTest() {
-	const adapter = new BrowserAdapter();
+	const adapter = new BrowserAdapter(WORKER_URL);
 	const link = document.getElementById('download-link') as HTMLLinkElement;
 
 	if (!Boolean(link)) {

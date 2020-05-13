@@ -1,6 +1,6 @@
 {
   "name": "@cross-nn/browser",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Browser module of cross-platform neural network",
   "main": "./dist/browser.js",
   "typings": "./dist/browser.d.ts",
@@ -20,7 +20,7 @@
     "watch": "npm run clean && tsc -w",
     "build": "npm run clean && tsc",
     "clean": "rimraf dist",
-    "dev": "npm run clean && parcel serve test/index.html --out-dir dist/test"
+    "dev": "npm run clean && parcel watch test/nn-worker.ts --out-dir dist/test --out-file nn-worker.js & parcel serve test/index.html --out-dir dist/test"
   },
   "dependencies": {
     "@cross-nn/core": "~0.0.7"
