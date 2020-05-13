@@ -6,3 +6,4 @@ dist/test/
 .vscode/
 .cache/
 tsconfig.json
+typings.tsconfig.json
