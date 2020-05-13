@@ -61,6 +61,7 @@
                     aria-label="Edit model"
                     color="accent"
                     (click)="editModel(m)"
+                    [disabled]="m.progress !== 100"
                     class="main-page__icon-btn">
               <mat-icon>edit</mat-icon>
             </button>
@@ -68,6 +69,7 @@
             <button mat-mini-fab
                     aria-label="Save model"
                     color="primary"
+                    [disabled]="m.progress !== 100"
                     class="main-page__icon-btn">
               <mat-icon>save</mat-icon>
             </button>

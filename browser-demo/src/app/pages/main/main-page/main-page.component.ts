@@ -15,14 +15,7 @@ export class MainPageComponent implements OnInit {
     changed: false
   };
 
-  public models = [
-    {progress: 70},
-    {progress: 50},
-    {progress: 30},
-    {progress: 70},
-    {progress: 80},
-    {progress: 60}
-  ];
+  public models = [];
 
   constructor(private modelEditor: ModelEditorService, private ngZone: NgZone) {
   }
@@ -44,47 +37,49 @@ export class MainPageComponent implements OnInit {
     // this.nnAdapter = new BrowserAdapter('/workers/cross-nn.worker.js', this.threadsConfig.count);
     // console.log('ADAPTER: ', this.nnAdapter);
 
-    this.ngZone.runOutsideAngular(() => {
-      const adapter = new BrowserAdapter('workers/cross-nn.worker.js', this.threadsConfig.count);
-      const epochCount = 10;
+    const adapter = new BrowserAdapter('workers/cross-nn.worker.js', this.threadsConfig.count);
+    const epochCount = 50;
 
-      const nnConfig: NeuralNetworkConfig = {
-        neuronCounts: [2, 30, 50, 30, 1],
-        learningRate: 0.3,
-        moment: 0.3
-      };
+    const nnConfig: NeuralNetworkConfig = {
+      neuronCounts: [2, 30, 50, 30, 1],
+      learningRate: 0.3,
+      moment: 0.3
+    };
 
-      const trainSet: TrainItem[] = [
-        {inputs: [0, 1], targets: [1]},
-        {inputs: [1, 0], targets: [1]},
-        {inputs: [0, 0], targets: [0]},
-        {inputs: [1, 1], targets: [0]}
-      ];
+    const trainSet: TrainItem[] = [
+      {inputs: [0, 1], targets: [1]},
+      {inputs: [1, 0], targets: [1]},
+      {inputs: [0, 0], targets: [0]},
+      {inputs: [1, 1], targets: [0]}
+    ];
 
-      const scaledTrainSet: TrainItem[] = [];
-      for (let i = 0; i < 100; ++i) {
-        scaledTrainSet.push(...trainSet);
-      }
+    const scaledTrainSet: TrainItem[] = [];
+    for (let i = 0; i < 100; ++i) {
+      scaledTrainSet.push(...trainSet);
+    }
 
-      for (let i = 0; i < 8; ++i) {
-        adapter.gradAlgorithmTrainAsync(
-          new NeuralNetwork(nnConfig),
-          LearningGradAlgorithm.BACK_PROP,
-          scaledTrainSet,
-          epochCount,
-          ({epochNumber, epochTime}) => {
-            const percent = Math.ceil((epochNumber/epochCount) * 100);
-            console.log('=== ' + i + ' === ' + `Complete percent: ${percent}% (${epochTime}ms)`);
-          }
-        ).then((nn) => {
-          console.log('=== ' + i + ' ===' + '[0, 1]: ', nn.query([0, 1]).toArray()[0]);
-          console.log('=== ' + i + ' ===' + '[1, 0]: ', nn.query([1, 0]).toArray()[0]);
-          console.log('=== ' + i + ' ===' + '[0, 0]: ', nn.query([0, 0]).toArray()[0]);
-          console.log('=== ' + i + ' ===' + '[1, 1]: ', nn.query([1, 1]).toArray()[0]);
-        })
-          .catch(console.error);
-      }
-    });
+    for (let i = 0; i < 8; ++i) {
+      this.models[i] = {progress: 0};
+
+      adapter.gradAlgorithmTrainAsync(
+        new NeuralNetwork(nnConfig),
+        LearningGradAlgorithm.BACK_PROP,
+        scaledTrainSet,
+        epochCount,
+        ({epochNumber, epochTime}) => {
+          const percent = Math.ceil((epochNumber/epochCount) * 100);
+
+          this.models[i] = {progress: percent};
+          console.log('=== ' + i + ' === ' + `Complete percent: ${percent}% (${epochTime}ms)`);
+        }
+      ).then((nn) => {
+        console.log('=== ' + i + ' ===' + '[0, 1]: ', nn.query([0, 1]).toArray()[0]);
+        console.log('=== ' + i + ' ===' + '[1, 0]: ', nn.query([1, 0]).toArray()[0]);
+        console.log('=== ' + i + ' ===' + '[0, 0]: ', nn.query([0, 0]).toArray()[0]);
+        console.log('=== ' + i + ' ===' + '[1, 1]: ', nn.query([1, 1]).toArray()[0]);
+      })
+        .catch(console.error);
+    }
   }
 
   public async createNewModel() {
