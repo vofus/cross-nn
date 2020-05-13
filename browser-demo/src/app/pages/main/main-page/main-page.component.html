@@ -1,0 +1,82 @@
+<div class="main-page">
+  <mat-toolbar color="primary">
+    <mat-toolbar-row>
+      <span>@cross-nn/browser demo application</span>
+    </mat-toolbar-row>
+  </mat-toolbar>
+
+  <div class="main-page__content">
+    <div class="main-page__content-col">
+      <div class="main-page__block">
+        <div class="main-page__block-title">Common</div>
+        <div class="main-page__block-content">
+          <div class="main-page__block-content-row">
+            <mat-form-field>
+              <mat-label>Thread count</mat-label>
+              <input matInput
+                     type="number"
+                     [min]="1"
+                     [ngModel]="threadsConfig.count"
+                     (ngModelChange)="setThreadCount($event)">
+            </mat-form-field>
+            <button mat-flat-button
+                    color="primary"
+                    [disabled]="!threadsConfig.changed"
+                    (click)="updateBrowserAdapter()"
+                    class="main-page__btn main-page__btn_align_right">Apply</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="main-page__block">
+        <div class="main-page__block-title">Models</div>
+        <div class="main-page__block-content">
+          <div class="main-page__block-content-row">
+            <button mat-stroked-button color="primary" class="main-page__btn main-page__btn_align_left">
+              <label class="main-page__upload-link">
+                <span>Load model</span>
+                <input type="file" accept="application/json">
+              </label>
+            </button>
+            <button mat-flat-button
+                    color="primary"
+                    (click)="createNewModel()"
+                    class="main-page__btn main-page__btn_align_right">New model</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="main-page__block">
+        <div class="main-page__block-content">
+          <mat-card *ngFor="let m of models; let i = index;" class="main-page__model-card">
+            <div class="main-page__card-number">{{ i + 1 }}</div>
+
+            <mat-progress-bar
+              class="main-page__progress-bar"
+              [color]="'primary'"
+              [value]="m.progress">
+            </mat-progress-bar>
+
+            <button mat-mini-fab
+                    aria-label="Edit model"
+                    color="accent"
+                    (click)="editModel(m)"
+                    class="main-page__icon-btn">
+              <mat-icon>edit</mat-icon>
+            </button>
+
+            <button mat-mini-fab
+                    aria-label="Save model"
+                    color="primary"
+                    class="main-page__icon-btn">
+              <mat-icon>save</mat-icon>
+            </button>
+          </mat-card>
+        </div>
+      </div>
+    </div>
+    <div class="main-page__content-col">
+      <app-sketchpad></app-sketchpad>
+    </div>
+  </div>
+</div>

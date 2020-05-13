@@ -1,0 +1,123 @@
+.main-page {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+.main-page__content {
+  box-sizing: border-box;
+  flex: 1;
+  display: flex;
+  align-items: stretch;
+  min-height: 100%;
+  max-height: 100%;
+}
+
+.main-page__content-col {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  padding: 32px;
+
+  &:first-of-type {
+    flex: 1;
+    min-width: 25%;
+  }
+
+  &:last-of-type {
+    flex: 3;
+    min-width: 75%;
+    border-left: 1px solid #eeeeee;
+  }
+}
+
+.main-page__block {
+  box-sizing: border-box;
+  margin-bottom: 24px;
+}
+
+.main-page__block-title {
+  box-sizing: border-box;
+  font-size: 16px;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.main-page__block-content {
+  box-sizing: border-box;
+}
+
+.main-page__block-content-row {
+  box-sizing: border-box;
+  display: flex;
+}
+
+.main-page__btn {
+  height: 36px;
+}
+
+.main-page__btn_align_right {
+  margin: 0 0 1.25em auto;
+}
+
+.main-page__btn_align_left {
+  margin: 0 auto 1.25em 0;
+}
+
+.main-page__upload-link {
+  position: relative;
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  background: transparent;
+
+  & > input[type=file] {
+    z-index: -1000;
+    position: fixed;
+    top: -1000px;
+    left: -1000px;
+    display: block;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+  }
+}
+
+.main-page__model-card {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  min-height: 56px;
+  margin-bottom: 16px;
+  padding: 8px 16px;
+  transition: background-color 0.175s ease-in-out;
+
+  &.main-page__model-card_selected {
+    background-color: transparentize(#3f51b5, 0.65);
+  }
+
+  &:not(.main-page__model-card_selected):hover {
+    background-color: transparentize(#3f51b5, 0.85);
+    cursor: pointer;
+  }
+}
+
+.main-page__card-number {
+  box-sizing: border-box;
+  width: 24px;
+  min-width: 24px;
+  margin-right: 8px;
+}
+
+.main-page__progress-bar {
+  flex: 1;
+  margin-right: 16px;
+}
+
+.main-page__icon-btn {
+  margin-left: 8px;
+}
