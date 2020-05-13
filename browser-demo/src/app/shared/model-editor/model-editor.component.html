@@ -1,1 +1,67 @@
-<p>model-editor works!</p>
+<div class="model-editor">
+  <div class="model-editor__header">Create new model</div>
+
+  <form *ngIf="configForm" [formGroup]="configForm" novalidate class="model-editor__form">
+    <div class="model-editor__form-col">
+      <div class="model-editor__block">
+        <div class="model-editor__block-title">Input</div>
+        <div class="model-editor__block-content">
+          <mat-form-field>
+            <input matInput type="number" [valueAsNumber]="INPUT_SIZE" [disabled]="true">
+          </mat-form-field>
+        </div>
+      </div>
+
+      <div class="model-editor__block">
+        <div class="model-editor__block-title">Output</div>
+        <div class="model-editor__block-content">
+          <mat-form-field>
+            <input matInput type="number" [valueAsNumber]="OUTPUT_SIZE" [disabled]="true">
+          </mat-form-field>
+        </div>
+      </div>
+
+      <div class="model-editor__block">
+        <div class="model-editor__block-title">Hidden</div>
+        <div class="model-editor__block-content">
+          <mat-form-field>
+            <input matInput type="number" [formControl]="HIDDEN">
+          </mat-form-field>
+        </div>
+      </div>
+    </div>
+
+    <div class="model-editor__form-col">
+      <div class="model-editor__block">
+        <div class="model-editor__block-title">Learning rate</div>
+        <div class="model-editor__block-content">
+          <mat-form-field>
+            <input matInput type="number" [formControl]="LR">
+          </mat-form-field>
+        </div>
+      </div>
+
+      <div class="model-editor__block">
+        <div class="model-editor__block-title">Moment</div>
+        <div class="model-editor__block-content">
+          <mat-form-field>
+            <input matInput type="number" [formControl]="MOMENT">
+          </mat-form-field>
+        </div>
+      </div>
+    </div>
+  </form>
+
+  <div class="model-editor__footer">
+    <button mat-flat-button
+            color="primary"
+            [disabled]="!configForm || !configForm.valid"
+            (click)="save()"
+            class="model-editor__btn">Create</button>
+
+    <button mat-flat-button
+            color="warn"
+            (click)="cancel()"
+            class="model-editor__btn">Cancel</button>
+  </div>
+</div>

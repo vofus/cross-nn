@@ -35,7 +35,7 @@
             <button mat-stroked-button color="primary" class="main-page__btn main-page__btn_align_left">
               <label class="main-page__upload-link">
                 <span>Load model</span>
-                <input type="file" accept="application/json">
+                <input type="file" accept="application/json" (change)="loadModel($event)">
               </label>
             </button>
             <button mat-flat-button
@@ -58,10 +58,19 @@
             </mat-progress-bar>
 
             <button mat-mini-fab
+                    aria-label="Remove model"
+                    color="warn"
+                    (click)="removeModel($event, i)"
+                    [disabled]="m.progress > 0 && m.progress < 100"
+                    class="main-page__icon-btn">
+              <mat-icon>close</mat-icon>
+            </button>
+
+            <button mat-mini-fab
                     aria-label="Edit model"
                     color="accent"
-                    (click)="editModel(m)"
-                    [disabled]="m.progress !== 100"
+                    (click)="trainModel($event, m)"
+                    [disabled]="m.progress > 0 && m.progress < 100"
                     class="main-page__icon-btn">
               <mat-icon>edit</mat-icon>
             </button>
@@ -69,7 +78,8 @@
             <button mat-mini-fab
                     aria-label="Save model"
                     color="primary"
-                    [disabled]="m.progress !== 100"
+                    (click)="saveModel($event)"
+                    [disabled]="m.progress !== 100 || !m.downloadURL"
                     class="main-page__icon-btn">
               <mat-icon>save</mat-icon>
             </button>

@@ -12,6 +12,9 @@ import { ModelEditorComponent } from './model-editor/model-editor.component';
 import { ModelEditorService } from './model-editor/model-editor.service';
 import { MatDialogModule } from '@angular/material/dialog';
 import { SketchpadComponent } from './sketchpad/sketchpad.component';
+import { ModelTrainingComponent } from './model-training/model-training.component';
+import { ModelTrainingService } from '@shared/model-training/model-training.service';
+import { MatSelectModule } from '@angular/material/select';
 
 const MODULES: Type<any>[] = [
   FormsModule,
@@ -23,16 +26,19 @@ const MODULES: Type<any>[] = [
   MatInputModule,
   MatFormFieldModule,
   MatProgressBarModule,
-  MatDialogModule
+  MatDialogModule,
+  MatSelectModule
 ];
 
 const DECLARATIONS: Type<any>[] = [
   ModelEditorComponent,
-  SketchpadComponent
+  SketchpadComponent,
+  ModelTrainingComponent
 ];
 
 const PROVIDERS: Provider[] = [
-  ModelEditorService
+  ModelEditorService,
+  ModelTrainingService
 ];
 
 @NgModule({

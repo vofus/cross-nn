@@ -1,7 +1,10 @@
-import { Component, NgZone, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { BrowserAdapter } from '@cross-nn/browser';
+import { MnistService } from '@core/mnist/mnist.service';
 import { ModelEditorService } from '@shared/model-editor/model-editor.service';
 import { LearningGradAlgorithm, NeuralNetwork, NeuralNetworkConfig, TrainItem } from '@cross-nn/core';
+import { NnModelItem } from './types';
+import { ModelTrainingService } from '@shared/model-training/model-training.service';
 
 @Component({
   selector: 'app-main-page',
@@ -9,18 +12,23 @@ import { LearningGradAlgorithm, NeuralNetwork, NeuralNetworkConfig, TrainItem } 
   styleUrls: ['./main-page.component.scss']
 })
 export class MainPageComponent implements OnInit {
+  private readonly WORKER_URL = 'workers/cross-nn.worker.js';
   private nnAdapter: BrowserAdapter = null;
   public threadsConfig = {
-    count: 1,
+    count: 4,
     changed: false
   };
 
-  public models = [];
+  public models: NnModelItem[] = [];
 
-  constructor(private modelEditor: ModelEditorService, private ngZone: NgZone) {
-  }
+  constructor(
+    private mnist: MnistService,
+    private modelEditor: ModelEditorService,
+    private modelTraining: ModelTrainingService
+  ) { }
 
   ngOnInit(): void {
+    this.nnAdapter = new BrowserAdapter(this.WORKER_URL, this.threadsConfig.count);
   }
 
   public setThreadCount(count: number) {
@@ -34,11 +42,9 @@ export class MainPageComponent implements OnInit {
 
   public updateBrowserAdapter() {
     this.threadsConfig.changed = false;
-    // this.nnAdapter = new BrowserAdapter('/workers/cross-nn.worker.js', this.threadsConfig.count);
-    // console.log('ADAPTER: ', this.nnAdapter);
 
-    const adapter = new BrowserAdapter('workers/cross-nn.worker.js', this.threadsConfig.count);
-    const epochCount = 50;
+    const adapter = new BrowserAdapter(this.WORKER_URL, this.threadsConfig.count);
+    const epochCount = 10;
 
     const nnConfig: NeuralNetworkConfig = {
       neuronCounts: [2, 30, 50, 30, 1],
@@ -59,7 +65,7 @@ export class MainPageComponent implements OnInit {
     }
 
     for (let i = 0; i < 8; ++i) {
-      this.models[i] = {progress: 0};
+      this.models[i] = {progress: 0} as any;
 
       adapter.gradAlgorithmTrainAsync(
         new NeuralNetwork(nnConfig),
@@ -69,7 +75,7 @@ export class MainPageComponent implements OnInit {
         ({epochNumber, epochTime}) => {
           const percent = Math.ceil((epochNumber/epochCount) * 100);
 
-          this.models[i] = {progress: percent};
+          this.models[i] = {progress: percent} as any;
           console.log('=== ' + i + ' === ' + `Complete percent: ${percent}% (${epochTime}ms)`);
         }
       ).then((nn) => {
@@ -82,11 +88,65 @@ export class MainPageComponent implements OnInit {
     }
   }
 
+  /**
+   * Добавить новую модель нейронной сети
+   */
   public async createNewModel() {
-    await this.modelEditor.open(null).toPromise();
+    const config = await this.modelEditor.open().toPromise();
+
+    if (Boolean(config)) {
+      const model = new NeuralNetwork(config);
+
+      this.models.push({
+        model,
+        config,
+        progress: 0,
+        downloadURL: ''
+      });
+    }
   }
 
-  public async editModel(model: any) {
-    await this.modelEditor.open(model).toPromise();
+  /**
+   * Загрузить нейронную сеть из файла
+   */
+  public async loadModel(event: Event) {
+    const model = await this.nnAdapter.loadNeuralNetwork(event.target as HTMLInputElement);
+
+    if (Boolean(model)) {
+      this.models.push({
+        model,
+        config: null,
+        progress: 0,
+        downloadURL: ''
+      });
+    }
+  }
+
+  /**
+   * Настроить тренировку нейронной сети
+   */
+  public async trainModel(event: Event, model: NnModelItem) {
+    event.stopPropagation();
+    const config = await this.modelTraining.open().toPromise();
+    console.log('CONFIG: ', config);
+  }
+
+  /**
+   * Удалить модель из списка по индексу
+   */
+  public async removeModel(event: Event, index: number) {
+    event.stopPropagation();
+    const condition = index >= 0 && index <= (this.models.length - 1);
+
+    if (condition) {
+      this.models.splice(index, 1);
+    }
+  }
+
+  /**
+   * Сохранить модель
+   */
+  public async saveModel(event: Event) {
+    event.stopPropagation();
   }
 }
