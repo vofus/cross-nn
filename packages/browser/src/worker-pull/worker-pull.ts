@@ -5,12 +5,26 @@ import { WorkerTask } from './worker-task.interface';
 import { Subject } from '../subject';
 
 export class WorkerPull {
+	private isTerminated = false;
 	private taskQueue: WorkerTask[] = [];
 	private workerThreads: WorkerThread[] = [];
-	public messages = new Subject();
+	public messages = new Subject<WorkerTask>();
 
 	constructor(workerUrl: string, size: number = 1) {
 		this.initWorkerThreads(workerUrl, size);
+	}
+
+	/**
+	 * Остановить все потоки
+	 */
+	public terminate() {
+		this.taskQueue = [];
+		this.messages.complete();
+
+		for (const thread of this.workerThreads) {
+			thread.status = WorkerThreadStatus.IDLE;
+			thread.worker.terminate();
+		}
 	}
 
 	/**
@@ -47,6 +61,10 @@ export class WorkerPull {
 	 * Поставить задачу в очередь
 	 */
 	public addTaskToQueue(task: WorkerTask) {
+		if (this.isTerminated) {
+			throw new Error('This WorkerPull has been terminated!');
+		}
+
 		this.taskQueue.push(task);
 		this.takeTaskFromQueue();
 	}

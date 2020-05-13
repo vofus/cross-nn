@@ -11,6 +11,13 @@ export class BrowserAdapter {
 	}
 
 	/**
+	 * Остановить все запущенные в пулле воркеры
+	 */
+	public terminate() {
+		this.workerPull.terminate();
+	}
+
+	/**
 	 * Загрузить нейронную сеть из файла
 	 */
 	public async loadNeuralNetwork(input: HTMLInputElement): Promise<NeuralNetwork> {
@@ -59,34 +66,42 @@ export class BrowserAdapter {
 
 		const promise = new Promise<NeuralNetwork>((resolve, reject) => {
 			const subscription = this.workerPull.messages
-				.subscribe((receivedTask: WorkerTask<Message<GradAlgorithmTrainBody>>) => {
-					try {
-						const response = receivedTask.message;
-						const condition = Boolean(response)
-							&& receivedTask.id === task.id
-							&& receivedTask.status === WorkerTaskStatus.COMPLETE
-							&& response.action === MessageAction.TRAIN_GRAD_ALGORITHM
-							&& response.type === MessageType.RESPONSE;
+				.subscribe(
+					(receivedTask: WorkerTask<Message<GradAlgorithmTrainBody>>) => {
+						try {
+							const response = receivedTask.message;
+							const condition = Boolean(response)
+								&& receivedTask.id === task.id
+								&& receivedTask.status === WorkerTaskStatus.COMPLETE
+								&& response.action === MessageAction.TRAIN_GRAD_ALGORITHM
+								&& response.type === MessageType.RESPONSE;
 
-						if (condition) {
-							const body = response.body;
+							if (condition) {
+								const body = response.body;
 
-							if (Boolean(body.serializedNetwork)) {
-								resolve(NeuralNetwork.deserialize(body.serializedNetwork));
-							} else {
-								reject();
+								if (Boolean(body.serializedNetwork)) {
+									resolve(NeuralNetwork.deserialize(body.serializedNetwork));
+								} else {
+									reject();
+								}
+
+								subscription.unsubscribe();
+								statusSubscription.unsubscribe();
 							}
-
+						} catch (err) {
+							console.error(err);
+							reject();
 							subscription.unsubscribe();
 							statusSubscription.unsubscribe();
 						}
-					} catch (err) {
-						console.error(err);
-						reject();
+					},
+					() => {},
+					() => {
+						reject('All threads have been terminated!');
 						subscription.unsubscribe();
 						statusSubscription.unsubscribe();
 					}
-				});
+				);
 		});
 
 		this.workerPull.addTaskToQueue(task);

@@ -3,11 +3,20 @@ import { SubscriptionCallback } from './subscription-callback.interface';
 
 export class Subscription<T = any> {
 	private subject: Subject = null;
-	public callback: SubscriptionCallback<T> = null;
+	public onSuccess: SubscriptionCallback<T> = null;
+	public onError: SubscriptionCallback<Error> = null;
+	public onComplete: SubscriptionCallback<void> = null;
 
-	constructor(subject: Subject, callback: SubscriptionCallback<T>) {
+	constructor(
+		subject: Subject,
+		onSuccess: SubscriptionCallback<T>,
+		onError?: SubscriptionCallback<Error>,
+		onComplete?: SubscriptionCallback<void>
+	) {
 		this.subject = subject;
-		this.callback = callback;
+		this.onSuccess = onSuccess;
+		this.onError = onError;
+		this.onComplete = onComplete;
 	}
 
 	public unsubscribe() {
