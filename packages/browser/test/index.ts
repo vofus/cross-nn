@@ -9,8 +9,9 @@ xorTest();
 
 
 function xorTest() {
+	const terminateBtn = document.getElementById('terminate');
 	const adapter = new BrowserAdapter(WORKER_URL,3);
-	const epochCount = 10;
+	const epochCount = 50;
 
 	const nnConfig: NeuralNetworkConfig = {
 		neuronCounts: [2, 30, 50, 30, 1],
@@ -30,6 +31,11 @@ function xorTest() {
 		scaledTrainSet.push(...trainSet);
 	}
 
+	if (Boolean(terminateBtn)) {
+		terminateBtn.onclick = () => {
+			adapter.terminate();
+		};
+	}
 
 	for (let i = 0; i < 4; ++i) {
 		const statusElement = document.getElementById('status_' + i);

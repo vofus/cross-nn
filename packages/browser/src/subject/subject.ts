@@ -3,12 +3,21 @@ import { SubscriptionCallback } from './subscription-callback.interface';
 
 export class Subject<T = any> {
 	private subscriptions: Subscription[] = [];
+	private isComplete = false;
 
-	public subscribe(callback: SubscriptionCallback<T>): Subscription {
-		const subscription = new Subscription<T>(this, callback);
-		this.subscriptions.push(subscription);
+	public subscribe(
+		onSuccess: SubscriptionCallback<T>,
+		onError?: SubscriptionCallback<Error>,
+		onComplete?: SubscriptionCallback<void>
+	): Subscription {
+		if (!this.isComplete) {
+			const subscription = new Subscription<T>(this, onSuccess, onError, onComplete);
+			this.subscriptions.push(subscription);
 
-		return subscription;
+			return subscription;
+		}
+
+		throw new Error('This Subject is completed!');
 	}
 
 	public unsubscribe(subscription: Subscription) {
@@ -20,7 +29,22 @@ export class Subject<T = any> {
 
 	public next(value: T) {
 		for (const subscription of this.subscriptions) {
-			subscription.callback(value);
+			typeof subscription.onSuccess === 'function' && subscription.onSuccess(value);
 		}
+	}
+
+	public emitError(err: Error) {
+		for (const subscription of this.subscriptions) {
+			typeof subscription.onError === 'function' && subscription.onError(err);
+		}
+	}
+
+	public complete() {
+		for (const subscription of this.subscriptions) {
+			typeof subscription.onComplete === 'function' && subscription.onComplete();
+		}
+
+		this.isComplete = true;
+		this.subscriptions = [];
 	}
 }
