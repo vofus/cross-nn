@@ -1,5 +1,5 @@
-import { Component, OnInit } from '@angular/core';
-import { BrowserAdapter } from '../../../../../../packages/browser';
+import { Component, NgZone, OnInit } from '@angular/core';
+import { BrowserAdapter } from '@cross-nn/browser';
 import { ModelEditorService } from '@shared/model-editor/model-editor.service';
 import { LearningGradAlgorithm, NeuralNetwork, NeuralNetworkConfig, TrainItem } from '@cross-nn/core';
 
@@ -24,7 +24,7 @@ export class MainPageComponent implements OnInit {
     {progress: 60}
   ];
 
-  constructor(private modelEditor: ModelEditorService) {
+  constructor(private modelEditor: ModelEditorService, private ngZone: NgZone) {
   }
 
   ngOnInit(): void {
@@ -44,30 +44,29 @@ export class MainPageComponent implements OnInit {
     // this.nnAdapter = new BrowserAdapter('/workers/cross-nn.worker.js', this.threadsConfig.count);
     // console.log('ADAPTER: ', this.nnAdapter);
 
-    const adapter = new BrowserAdapter('workers/cross-nn.worker.js', this.threadsConfig.count);
-    const epochCount = 10;
+    this.ngZone.runOutsideAngular(() => {
+      const adapter = new BrowserAdapter('workers/cross-nn.worker.js', this.threadsConfig.count);
+      const epochCount = 10;
 
-    const nnConfig: NeuralNetworkConfig = {
-      neuronCounts: [2, 30, 50, 30, 1],
-      learningRate: 0.3,
-      moment: 0.3
-    };
+      const nnConfig: NeuralNetworkConfig = {
+        neuronCounts: [2, 30, 50, 30, 1],
+        learningRate: 0.3,
+        moment: 0.3
+      };
 
-    const trainSet: TrainItem[] = [
-      {inputs: [0, 1], targets: [1]},
-      {inputs: [1, 0], targets: [1]},
-      {inputs: [0, 0], targets: [0]},
-      {inputs: [1, 1], targets: [0]}
-    ];
+      const trainSet: TrainItem[] = [
+        {inputs: [0, 1], targets: [1]},
+        {inputs: [1, 0], targets: [1]},
+        {inputs: [0, 0], targets: [0]},
+        {inputs: [1, 1], targets: [0]}
+      ];
 
-    const scaledTrainSet: TrainItem[] = [];
-    for (let i = 0; i < 100; ++i) {
-      scaledTrainSet.push(...trainSet);
-    }
+      const scaledTrainSet: TrainItem[] = [];
+      for (let i = 0; i < 100; ++i) {
+        scaledTrainSet.push(...trainSet);
+      }
 
-
-    // setTimeout(() => {
-      for (let i = 0; i < 4; ++i) {
+      for (let i = 0; i < 8; ++i) {
         adapter.gradAlgorithmTrainAsync(
           new NeuralNetwork(nnConfig),
           LearningGradAlgorithm.BACK_PROP,
@@ -85,7 +84,7 @@ export class MainPageComponent implements OnInit {
         })
           .catch(console.error);
       }
-    // }, 0);
+    });
   }
 
   public async createNewModel() {
