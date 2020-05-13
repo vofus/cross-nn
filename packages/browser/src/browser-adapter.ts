@@ -6,8 +6,8 @@ import { gradAlgorithmRequestCreator } from './message-creators';
 export class BrowserAdapter {
 	private workerPull: WorkerPull = null;
 
-	constructor(workerPullSize: number = 1) {
-		this.workerPull = new WorkerPull(workerPullSize);
+	constructor(workerUrl: string, workerPullSize: number = 1) {
+		this.workerPull = new WorkerPull(workerUrl, workerPullSize);
 	}
 
 	/**
