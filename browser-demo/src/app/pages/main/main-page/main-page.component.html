@@ -48,7 +48,10 @@
 
       <div class="main-page__block">
         <div class="main-page__block-content">
-          <mat-card *ngFor="let m of models; let i = index;" class="main-page__model-card">
+          <mat-card *ngFor="let m of models; let i = index;"
+                    [class.main-page__model-card_selected]="!!selectedModel && selectedModel === m"
+                    (click)="selectModel(m)"
+                    class="main-page__model-card">
             <div class="main-page__card-number">{{ i + 1 }}</div>
 
             <mat-progress-bar
@@ -75,20 +78,31 @@
               <mat-icon>edit</mat-icon>
             </button>
 
-            <button mat-mini-fab
-                    aria-label="Save model"
-                    color="primary"
-                    (click)="saveModel($event)"
-                    [disabled]="m.progress !== 100 || !m.downloadURL"
-                    class="main-page__icon-btn">
-              <mat-icon>save</mat-icon>
-            </button>
+            <a mat-mini-fab
+               aria-label="Save model"
+               color="primary"
+               download="neural-network.json"
+               (click)="saveModel($event)"
+               [href]="m.downloadURL"
+               [disabled]="m.progress !== 100 || !m.downloadURL"
+               class="main-page__icon-btn">
+               <mat-icon>save</mat-icon>
+            </a>
           </mat-card>
         </div>
       </div>
     </div>
     <div class="main-page__content-col">
-      <app-sketchpad></app-sketchpad>
+      <div class="main-page__sketchpad-container">
+        <app-sketchpad [disabled]="!selectedModel"
+                      (imageData)="recognizeImage($event)"
+                      (imageClear)="resetRecognitionData()"
+        ></app-sketchpad>
+        <div class="main-page__recognition">
+          <div class="main-page__recognition-number">Recognized number: {{ recognition.number }}</div>
+          <div class="main-page__recognition-percent">Recognition percent: {{ recognition.percent ? recognition.percent + '%' : '' }}</div>
+        </div>
+      </div>
     </div>
   </div>
 </div>

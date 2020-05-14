@@ -95,6 +95,7 @@
   margin-bottom: 16px;
   padding: 8px 16px;
   transition: background-color 0.175s ease-in-out;
+  cursor: pointer;
 
   &.main-page__model-card_selected {
     background-color: transparentize(#3f51b5, 0.65);
@@ -102,7 +103,6 @@
 
   &:not(.main-page__model-card_selected):hover {
     background-color: transparentize(#3f51b5, 0.85);
-    cursor: pointer;
   }
 }
 
@@ -120,4 +120,32 @@
 
 .main-page__icon-btn {
   margin-left: 8px;
+}
+
+.main-page__sketchpad-container {
+  box-sizing: border-box;
+  display: flex;
+}
+
+.main-page__recognition {
+  box-sizing: border-box;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  margin-left: 32px;
+}
+
+.main-page__recognition-number {
+  box-sizing: border-box;
+  margin-bottom: 24px;
+  font-size: 36px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.main-page__recognition-percent {
+  box-sizing: border-box;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1;
 }

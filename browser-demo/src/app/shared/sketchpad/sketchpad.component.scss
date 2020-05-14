@@ -1,7 +1,31 @@
 .sketchpad {
+  box-sizing: border-box;
+}
+
+.sketchpad__container {
+  box-sizing: border-box;
+  display: flex;
+  align-items: flex-end;
+  margin-bottom: 16px;
+}
+
+.sketchpad__canvas_sketchpad {
+  box-sizing: border-box;
+  margin-right: 16px;
   border: 2px solid #eeeeee;
 }
 
-.thumbnail {
+.sketchpad__canvas_thumbnail {
+  box-sizing: border-box;
   border: 1px solid #eeeeee;
+}
+
+.sketchpad__footer {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+}
+
+.sketchpad__btn {
+  margin-right: 16px;
 }

@@ -178,7 +178,6 @@ export class Drawer {
     // now bin image into 10x10 blocks (giving a 28x28 image)
     imgData = copyCtx.getImageData(0, 0, 280, 280);
     grayscaleImg = imageDataToGrayscale(imgData);
-    console.log(grayscaleImg);
 
     const nnInput = new Array(784);
     const nnInput2 = [];

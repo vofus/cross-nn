@@ -1,6 +1,11 @@
-<canvas #sketchpad width="280" height="280" class="sketchpad"></canvas>
-<canvas #thumbnail width="28" height="28" class="thumbnail"></canvas>
+<div class="sketchpad">
+        <div class="sketchpad__container">
+                <canvas #sketchpad width="280" height="280" class="sketchpad__canvas_sketchpad"></canvas>
+                <canvas #thumbnail width="28" height="28" class="sketchpad__canvas_thumbnail"></canvas>
+        </div>
 
-<button mat-flat-button
-        (click)="clear()"
-        color="warn">Clear</button>
+        <div class="sketchpad__footer">
+                <button mat-flat-button (click)="recognize($event)" [disabled]="disabled || isDirty" color="primary" class="sketchpad__btn">Recognize</button>
+                <button mat-flat-button (click)="clear()" [disabled]="disabled" color="warn" class="sketchpad__btn">Clear</button>
+        </div>
+</div>

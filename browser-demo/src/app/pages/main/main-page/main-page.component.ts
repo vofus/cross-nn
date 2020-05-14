@@ -1,10 +1,11 @@
 import { Component, OnInit } from '@angular/core';
+import { DomSanitizer } from '@angular/platform-browser';
 import { BrowserAdapter } from '@cross-nn/browser';
 import { MnistService } from '@core/mnist/mnist.service';
+import { NeuralNetwork } from '@cross-nn/core';
 import { ModelEditorService } from '@shared/model-editor/model-editor.service';
-import { LearningGradAlgorithm, NeuralNetwork, NeuralNetworkConfig, TrainItem } from '@cross-nn/core';
-import { NnModelItem } from './types';
 import { ModelTrainingService } from '@shared/model-training/model-training.service';
+import { NnModelItem } from './types';
 
 @Component({
   selector: 'app-main-page',
@@ -15,22 +16,32 @@ export class MainPageComponent implements OnInit {
   private readonly WORKER_URL = 'workers/cross-nn.worker.js';
   private nnAdapter: BrowserAdapter = null;
   public threadsConfig = {
-    count: 4,
+    count: 1,
     changed: false
   };
 
+  public recognition = {
+    number: null,
+    percent: null
+  };
+
   public models: NnModelItem[] = [];
+  public selectedModel: NnModelItem = null;
 
   constructor(
+    private sanitizer: DomSanitizer,
     private mnist: MnistService,
     private modelEditor: ModelEditorService,
     private modelTraining: ModelTrainingService
   ) { }
 
   ngOnInit(): void {
-    this.nnAdapter = new BrowserAdapter(this.WORKER_URL, this.threadsConfig.count);
+    this.updateBrowserAdapter();
   }
 
+  /**
+   * Установить количество потоков
+   */
   public setThreadCount(count: number) {
     this.threadsConfig.changed = true;
     this.threadsConfig.count = typeof count === 'number'
@@ -40,69 +51,37 @@ export class MainPageComponent implements OnInit {
         : 1;
   }
 
+  /**
+   * Обновить объект адаптера
+   */
   public updateBrowserAdapter() {
+    if (Boolean(this.nnAdapter)) {
+      this.nnAdapter.terminate();
+    }
+
     this.threadsConfig.changed = false;
-
-    const adapter = new BrowserAdapter(this.WORKER_URL, this.threadsConfig.count);
-    const epochCount = 10;
-
-    const nnConfig: NeuralNetworkConfig = {
-      neuronCounts: [2, 30, 50, 30, 1],
-      learningRate: 0.3,
-      moment: 0.3
-    };
-
-    const trainSet: TrainItem[] = [
-      {inputs: [0, 1], targets: [1]},
-      {inputs: [1, 0], targets: [1]},
-      {inputs: [0, 0], targets: [0]},
-      {inputs: [1, 1], targets: [0]}
-    ];
-
-    const scaledTrainSet: TrainItem[] = [];
-    for (let i = 0; i < 100; ++i) {
-      scaledTrainSet.push(...trainSet);
-    }
-
-    for (let i = 0; i < 8; ++i) {
-      this.models[i] = {progress: 0} as any;
-
-      adapter.gradAlgorithmTrainAsync(
-        new NeuralNetwork(nnConfig),
-        LearningGradAlgorithm.BACK_PROP,
-        scaledTrainSet,
-        epochCount,
-        ({epochNumber, epochTime}) => {
-          const percent = Math.ceil((epochNumber/epochCount) * 100);
-
-          this.models[i] = {progress: percent} as any;
-          console.log('=== ' + i + ' === ' + `Complete percent: ${percent}% (${epochTime}ms)`);
-        }
-      ).then((nn) => {
-        console.log('=== ' + i + ' ===' + '[0, 1]: ', nn.query([0, 1]).toArray()[0]);
-        console.log('=== ' + i + ' ===' + '[1, 0]: ', nn.query([1, 0]).toArray()[0]);
-        console.log('=== ' + i + ' ===' + '[0, 0]: ', nn.query([0, 0]).toArray()[0]);
-        console.log('=== ' + i + ' ===' + '[1, 1]: ', nn.query([1, 1]).toArray()[0]);
-      })
-        .catch(console.error);
-    }
+    this.nnAdapter = new BrowserAdapter(this.WORKER_URL, this.threadsConfig.count);
   }
 
   /**
    * Добавить новую модель нейронной сети
    */
   public async createNewModel() {
-    const config = await this.modelEditor.open().toPromise();
+    try {
+      const config = await this.modelEditor.open().toPromise();
 
-    if (Boolean(config)) {
-      const model = new NeuralNetwork(config);
+      if (Boolean(config)) {
+        const model = new NeuralNetwork(config);
 
-      this.models.push({
-        model,
-        config,
-        progress: 0,
-        downloadURL: ''
-      });
+        this.models.push({
+          model,
+          config,
+          progress: 0,
+          downloadURL: null
+        });
+      }
+    } catch (err) {
+      console.error(err);
     }
   }
 
@@ -110,43 +89,119 @@ export class MainPageComponent implements OnInit {
    * Загрузить нейронную сеть из файла
    */
   public async loadModel(event: Event) {
-    const model = await this.nnAdapter.loadNeuralNetwork(event.target as HTMLInputElement);
+    try {
+      const model = await this.nnAdapter.loadNeuralNetwork(event.target as HTMLInputElement);
 
-    if (Boolean(model)) {
-      this.models.push({
-        model,
-        config: null,
-        progress: 0,
-        downloadURL: ''
-      });
+      if (Boolean(model)) {
+        this.models.push({
+          model,
+          config: null,
+          progress: 0,
+          downloadURL: null
+        });
+      }
+    } catch (err) {
+      console.error(err);
     }
   }
 
   /**
    * Настроить тренировку нейронной сети
    */
-  public async trainModel(event: Event, model: NnModelItem) {
+  public async trainModel(event: Event, nnModel: NnModelItem) {
     event.stopPropagation();
-    const config = await this.modelTraining.open().toPromise();
-    console.log('CONFIG: ', config);
+    
+    try {
+      const {algorithm, epochs, trainingSetSize} = await this.modelTraining.open().toPromise();
+      const trainingSet = this.mnist.getTrainSet(trainingSetSize);
+      const progressReporter = ({epochNumber}) => {
+        nnModel.progress = Math.ceil((epochNumber / epochs) * 100);
+      };
+
+      const model = await this.nnAdapter.gradAlgorithmTrainAsync(
+        nnModel.model,
+        algorithm,
+        trainingSet,
+        epochs,
+        progressReporter
+      );
+
+      const downloadURL = await this.nnAdapter.saveNeuralNetwork(model);
+
+      nnModel.model = model;
+      nnModel.downloadURL = this.sanitizer.bypassSecurityTrustUrl(downloadURL);
+    } catch (err) {
+      console.error(err);
+      nnModel.progress = 0;
+    }
   }
 
   /**
    * Удалить модель из списка по индексу
    */
-  public async removeModel(event: Event, index: number) {
+  public removeModel(event: Event, index: number) {
     event.stopPropagation();
-    const condition = index >= 0 && index <= (this.models.length - 1);
+    
+    try {
+      const condition = index >= 0 && index <= (this.models.length - 1);
 
-    if (condition) {
-      this.models.splice(index, 1);
+      if (condition) {
+        const [removedModel] = this.models.splice(index, 1);
+
+        if (this.selectedModel === removedModel) {
+          this.selectedModel = null;
+        }
+      }
+    } catch (err) {
+      console.error(err);
     }
+  }
+
+  /**
+   * Выбрать модель нейронной сети
+   */
+  public selectModel(model: NnModelItem) {
+    this.selectedModel = this.selectedModel === model ? null : model;
   }
 
   /**
    * Сохранить модель
    */
-  public async saveModel(event: Event) {
+  public saveModel(event: Event) {
     event.stopPropagation();
+  }
+
+  /**
+   * Распознать изображение
+   */
+  public recognizeImage(imageData: number[]) {
+    if (Boolean(this.selectedModel) && Boolean(this.selectedModel.model)) {
+      const recognition = this.selectedModel.model.query(imageData);
+      const arr = recognition.toArray();
+      const index = this.getMaxIndex(arr);
+      const percent = Math.round(arr[index][0] * 100);
+
+      this.recognition = {
+        number: index,
+        percent: percent
+      };
+    }
+  }
+
+  /**
+   * Сбросить данные о распознанном изображении
+   */
+  public resetRecognitionData() {
+    this.recognition = {
+      number: null,
+      percent: null
+    };
+  }
+
+  /**
+   * Получить индекс максимального значения
+   */
+  private getMaxIndex(result: number[][]): number {
+    return result.reduce((res, [item], i) => item > result[res][0] ? i : res, 0);
   }
 }

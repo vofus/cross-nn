@@ -18,4 +18,25 @@ export class MnistService {
         };
       });
   }
+
+  /**
+   * Получить массив с тренировочными наборами для тестирования
+   */
+  getTestSets(count: number = 50): TrainItem[][] {
+    const testSets: TrainItem[][] = [];
+
+    for (let i = 0; i < 10; ++i) {
+      const numberTestSet = mnist[i].set(0, count - 1)
+        .map<TrainItem>((item: any) => {
+          return {
+            inputs: item.input,
+            targets: item.output
+          };
+        });
+
+      testSets.push(numberTestSet);
+    }
+
+    return testSets;
+  }
 }

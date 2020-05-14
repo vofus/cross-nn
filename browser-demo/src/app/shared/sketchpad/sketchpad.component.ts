@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild, Output, EventEmitter, Input } from '@angular/core';
 import { Drawer } from './models';
 
 @Component({
@@ -9,10 +9,16 @@ import { Drawer } from './models';
 export class SketchpadComponent implements OnInit {
   private drawer: Drawer = null;
 
+  @Input() disabled = false;
+  @Output() imageData = new EventEmitter<number[]>();
+  @Output() imageClear = new EventEmitter<void>();
+
   @ViewChild('sketchpad', {static: true}) sketchpadRef: ElementRef<HTMLCanvasElement>;
   @ViewChild('thumbnail', {static: true}) thumbnailRef: ElementRef<HTMLCanvasElement>;
 
-  constructor() { }
+  get isDirty(): boolean {
+    return !Boolean(this.drawer) || (this.drawer.isRecognized && !this.drawer.isDrawing);
+  }
 
   ngOnInit() {
     this.drawer = new Drawer(
@@ -23,5 +29,10 @@ export class SketchpadComponent implements OnInit {
 
   public clear() {
     this.drawer.clear();
+    this.imageClear.emit();
+  }
+
+  public recognize(event: Event) {
+    this.imageData.emit(this.drawer.recognize(event));
   }
 }
