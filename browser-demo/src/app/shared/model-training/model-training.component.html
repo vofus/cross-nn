@@ -1,0 +1,51 @@
+<div class="model-training">
+  <div class="model-training__header">Train model</div>
+
+  <form *ngIf="configForm" [formGroup]="configForm" novalidate class="model-training__form">
+    <div class="model-training__form-col">
+      <div class="model-training__block">
+        <div class="model-training__block-title">Algorithm</div>
+        <div class="model-training__block-content">
+          <mat-select [formControl]="ALGORITHM">
+            <mat-option *ngFor="let algorithm of ALGORITHMS" [value]="algorithm.id">
+              {{ algorithm.name }}
+            </mat-option>
+          </mat-select>
+        </div>
+      </div>
+
+      <div class="model-training__block">
+        <div class="model-training__block-title">TrainSet size</div>
+        <div class="model-training__block-content">
+          <mat-form-field>
+            <input matInput type="number" [formControl]="TRAIN_SET">
+          </mat-form-field>
+        </div>
+      </div>
+
+      <div class="model-training__block">
+        <div class="model-training__block-title">Epochs</div>
+        <div class="model-training__block-content">
+          <mat-form-field>
+            <input matInput type="number" [formControl]="EPOCHS">
+          </mat-form-field>
+        </div>
+      </div>
+    </div>
+
+    <div class="model-training__form-col"><!-- EMPTY --></div>
+  </form>
+
+  <div class="model-training__footer">
+    <button mat-flat-button
+            color="primary"
+            [disabled]="!configForm || !configForm.valid"
+            (click)="save()"
+            class="model-training__btn">Train</button>
+
+    <button mat-flat-button
+            color="warn"
+            (click)="cancel()"
+            class="model-training__btn">Cancel</button>
+  </div>
+</div>

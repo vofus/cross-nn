@@ -21,8 +21,9 @@
     "@angular/platform-browser": "~9.1.6",
     "@angular/platform-browser-dynamic": "~9.1.6",
     "@angular/router": "~9.1.6",
-    "@cross-nn/browser": "~0.0.6",
+    "@cross-nn/browser": "~0.0.9",
     "@cross-nn/core": "~0.0.7",
+    "mnist": "^1.1.0",
     "rxjs": "~6.5.4",
     "tslib": "^1.10.0",
     "zone.js": "~0.10.2"

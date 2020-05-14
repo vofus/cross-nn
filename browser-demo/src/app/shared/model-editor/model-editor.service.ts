@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { Observable } from 'rxjs';
+import { NeuralNetworkConfig } from '@cross-nn/core';
 import { ModelEditorComponent } from './model-editor.component';
+import { Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -9,7 +10,7 @@ import { ModelEditorComponent } from './model-editor.component';
 export class ModelEditorService {
   constructor(private dialog: MatDialog) { }
 
-  open(data: any): Observable<any> {
-    return this.dialog.open(ModelEditorComponent, {data}).afterClosed();
+  open(): Observable<NeuralNetworkConfig> {
+    return this.dialog.open(ModelEditorComponent).afterClosed();
   }
 }

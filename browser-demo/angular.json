@@ -35,7 +35,7 @@
             "fileReplacements": [
               {
                 "replace": "src/workers/cross-nn.worker.js",
-                "with": "../packages/browser/dist/worker.js"
+                "with": "./node_modules/@cross-nn/browser/dist/worker.js"
               }
             ],
             "scripts": []

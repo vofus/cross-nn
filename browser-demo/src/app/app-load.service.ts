@@ -7,7 +7,9 @@ import { MatIconRegistry } from '@angular/material/icon';
 })
 export class AppLoadService {
   private readonly ICONS_REGISTRY = new Map<string, string>([
+    ['close', '/assets/icons/close.svg'],
     ['edit', '/assets/icons/edit.svg'],
+    ['play', '/assets/icons/play.svg'],
     ['save', '/assets/icons/save.svg']
   ]);
 

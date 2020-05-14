@@ -35,7 +35,7 @@
             <button mat-stroked-button color="primary" class="main-page__btn main-page__btn_align_left">
               <label class="main-page__upload-link">
                 <span>Load model</span>
-                <input type="file" accept="application/json">
+                <input type="file" accept="application/json" (change)="loadModel($event)">
               </label>
             </button>
             <button mat-flat-button
@@ -48,7 +48,10 @@
 
       <div class="main-page__block">
         <div class="main-page__block-content">
-          <mat-card *ngFor="let m of models; let i = index;" class="main-page__model-card">
+          <mat-card *ngFor="let m of models; let i = index;"
+                    [class.main-page__model-card_selected]="!!selectedModel && selectedModel === m"
+                    (click)="selectModel(m)"
+                    class="main-page__model-card">
             <div class="main-page__card-number">{{ i + 1 }}</div>
 
             <mat-progress-bar
@@ -58,25 +61,94 @@
             </mat-progress-bar>
 
             <button mat-mini-fab
+                    aria-label="Remove model"
+                    color="warn"
+                    (click)="removeModel($event, i)"
+                    [disabled]="m.progress > 0 && m.progress < 100"
+                    class="main-page__icon-btn">
+              <mat-icon>close</mat-icon>
+            </button>
+
+            <button mat-mini-fab
                     aria-label="Edit model"
                     color="accent"
-                    (click)="editModel(m)"
+                    (click)="trainModel($event, m)"
+                    [disabled]="m.progress > 0 && m.progress < 100"
                     class="main-page__icon-btn">
               <mat-icon>edit</mat-icon>
             </button>
 
-            <button mat-mini-fab
-                    aria-label="Save model"
-                    color="primary"
-                    class="main-page__icon-btn">
-              <mat-icon>save</mat-icon>
-            </button>
+            <a mat-mini-fab
+               aria-label="Save model"
+               color="primary"
+               download="neural-network.json"
+               (click)="saveModel($event)"
+               [href]="m.downloadURL"
+               [disabled]="m.progress !== 100 || !m.downloadURL"
+               class="main-page__icon-btn">
+               <mat-icon>save</mat-icon>
+            </a>
           </mat-card>
         </div>
       </div>
     </div>
     <div class="main-page__content-col">
-      <app-sketchpad></app-sketchpad>
+      <mat-tab-group [(selectedIndex)]="selectedTabIndex">
+        <mat-tab label="Sketchpad">
+          <div class="main-page__sketchpad-container">
+            <app-sketchpad [disabled]="!selectedModel"
+                          (imageData)="recognizeImage($event)"
+                          (imageClear)="resetRecognitionData()"
+            ></app-sketchpad>
+            <div class="main-page__recognition">
+              <div class="main-page__recognition-number">Recognized number: {{ recognition.digit }}</div>
+              <div class="main-page__recognition-percent">Recognition percent: {{ recognition.percent ? recognition.percent + '%' : '' }}</div>
+            </div>
+          </div>
+        </mat-tab>
+        <mat-tab label="Autotest">
+          <div class="main-page__autotest-container">
+            <div class="main-page__autotest-form">
+              <mat-form-field>
+                <mat-label>Test set size</mat-label>
+                <input matInput
+                       type="number"
+                       [min]="50"
+                       [(ngModel)]="autoTestCount">
+              </mat-form-field>
+              <button mat-flat-button
+                    color="primary"
+                    class="main-page__autotest-run-btn"
+                    [disabled]="!selectedModel"
+                    (click)="autoTest()">Run autotest</button>
+            </div>
+            <div class="main-page__autotest-table-container">
+              <mat-accordion>
+                <mat-expansion-panel *ngFor="let res of autoTestResults">
+                  <mat-expansion-panel-header>
+                    <mat-panel-title>Digit: {{res.digit}}. Total recognition percent: {{res.percent}}%</mat-panel-title>
+                  </mat-expansion-panel-header>
+
+                  <table mat-table [dataSource]="res.results">
+                    <ng-container matColumnDef="digit">
+                      <th class="main-page__autotest-table-cell" mat-header-cell *matHeaderCellDef>Recognized digit</th>
+                      <td class="main-page__autotest-table-cell" mat-cell *matCellDef="let r"> {{r.digit}} </td>
+                    </ng-container>
+                  
+                    <ng-container matColumnDef="percent">
+                      <th class="main-page__autotest-table-cell" mat-header-cell *matHeaderCellDef>Recognition percent</th>
+                      <td class="main-page__autotest-table-cell" mat-cell *matCellDef="let r"> {{r.percent}} </td>
+                    </ng-container>
+                  
+                    <tr class="main-page__autotest-table-row" mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                    <tr class="main-page__autotest-table-row" mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+                  </table>
+                </mat-expansion-panel>
+              </mat-accordion>
+            </div>
+          </div>
+        </mat-tab>
+      </mat-tab-group>
     </div>
   </div>
 </div>

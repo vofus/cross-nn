@@ -18,16 +18,17 @@
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  padding: 32px;
 
   &:first-of-type {
     flex: 1;
     min-width: 25%;
+    padding: 32px;
   }
 
   &:last-of-type {
     flex: 3;
     min-width: 75%;
+    padding: 16px 32px 32px;
     border-left: 1px solid #eeeeee;
   }
 }
@@ -95,6 +96,7 @@
   margin-bottom: 16px;
   padding: 8px 16px;
   transition: background-color 0.175s ease-in-out;
+  cursor: pointer;
 
   &.main-page__model-card_selected {
     background-color: transparentize(#3f51b5, 0.65);
@@ -102,7 +104,6 @@
 
   &:not(.main-page__model-card_selected):hover {
     background-color: transparentize(#3f51b5, 0.85);
-    cursor: pointer;
   }
 }
 
@@ -120,4 +121,57 @@
 
 .main-page__icon-btn {
   margin-left: 8px;
+}
+
+.main-page__sketchpad-container {
+  box-sizing: border-box;
+  display: flex;
+  padding-top: 32px;
+}
+
+.main-page__recognition {
+  box-sizing: border-box;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  margin-left: 32px;
+}
+
+.main-page__recognition-number {
+  box-sizing: border-box;
+  margin-bottom: 24px;
+  font-size: 36px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.main-page__recognition-percent {
+  box-sizing: border-box;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.main-page__autotest-container {
+  box-sizing: border-box;
+  padding-top: 32px;
+}
+
+.main-page__autotest-table-container {
+  box-sizing: border-box;
+}
+
+.main-page__autotest-run-btn {
+  height: 36px;
+  margin-left: 32px;
+}
+
+.main-page__autotest-table-row {
+  &:nth-child(even) {
+    background-color: transparentize(#eeeeee, 0.75);
+  }
+}
+
+.main-page__autotest-table-cell {
+  width: 160px;
 }
