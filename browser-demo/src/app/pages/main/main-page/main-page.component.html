@@ -93,16 +93,62 @@
       </div>
     </div>
     <div class="main-page__content-col">
-      <div class="main-page__sketchpad-container">
-        <app-sketchpad [disabled]="!selectedModel"
-                      (imageData)="recognizeImage($event)"
-                      (imageClear)="resetRecognitionData()"
-        ></app-sketchpad>
-        <div class="main-page__recognition">
-          <div class="main-page__recognition-number">Recognized number: {{ recognition.number }}</div>
-          <div class="main-page__recognition-percent">Recognition percent: {{ recognition.percent ? recognition.percent + '%' : '' }}</div>
-        </div>
-      </div>
+      <mat-tab-group [(selectedIndex)]="selectedTabIndex">
+        <mat-tab label="Sketchpad">
+          <div class="main-page__sketchpad-container">
+            <app-sketchpad [disabled]="!selectedModel"
+                          (imageData)="recognizeImage($event)"
+                          (imageClear)="resetRecognitionData()"
+            ></app-sketchpad>
+            <div class="main-page__recognition">
+              <div class="main-page__recognition-number">Recognized number: {{ recognition.digit }}</div>
+              <div class="main-page__recognition-percent">Recognition percent: {{ recognition.percent ? recognition.percent + '%' : '' }}</div>
+            </div>
+          </div>
+        </mat-tab>
+        <mat-tab label="Autotest">
+          <div class="main-page__autotest-container">
+            <div class="main-page__autotest-form">
+              <mat-form-field>
+                <mat-label>Test set size</mat-label>
+                <input matInput
+                       type="number"
+                       [min]="50"
+                       [(ngModel)]="autoTestCount">
+              </mat-form-field>
+              <button mat-flat-button
+                    color="primary"
+                    class="main-page__autotest-run-btn"
+                    [disabled]="!selectedModel"
+                    (click)="autoTest()">Run autotest</button>
+            </div>
+            <div class="main-page__autotest-table-container">
+              <mat-accordion>
+                <mat-expansion-panel *ngFor="let res of autoTestResults">
+                  <mat-expansion-panel-header>
+                    <mat-panel-title>Digit: {{res.digit}}. Total recognition percent: {{res.percent}}%</mat-panel-title>
+                  </mat-expansion-panel-header>
+
+                  <table mat-table [dataSource]="res.results">
+                    <ng-container matColumnDef="digit">
+                      <th class="main-page__autotest-table-cell" mat-header-cell *matHeaderCellDef>Recognized digit</th>
+                      <td class="main-page__autotest-table-cell" mat-cell *matCellDef="let r"> {{r.digit}} </td>
+                    </ng-container>
+                  
+                    <ng-container matColumnDef="percent">
+                      <th class="main-page__autotest-table-cell" mat-header-cell *matHeaderCellDef>Recognition percent</th>
+                      <td class="main-page__autotest-table-cell" mat-cell *matCellDef="let r"> {{r.percent}} </td>
+                    </ng-container>
+                  
+                    <tr class="main-page__autotest-table-row" mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                    <tr class="main-page__autotest-table-row" mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+                  </table>
+                </mat-expansion-panel>
+              </mat-accordion>
+            </div>
+          </div>
+        </mat-tab>
+      </mat-tab-group>
     </div>
   </div>
 </div>

@@ -15,6 +15,9 @@ import { SketchpadComponent } from './sketchpad/sketchpad.component';
 import { ModelTrainingComponent } from './model-training/model-training.component';
 import { ModelTrainingService } from '@shared/model-training/model-training.service';
 import { MatSelectModule } from '@angular/material/select';
+import { MatTabsModule } from '@angular/material/tabs';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { MatTableModule } from '@angular/material/table';
 
 const MODULES: Type<any>[] = [
   FormsModule,
@@ -27,7 +30,10 @@ const MODULES: Type<any>[] = [
   MatFormFieldModule,
   MatProgressBarModule,
   MatDialogModule,
-  MatSelectModule
+  MatSelectModule,
+  MatTabsModule,
+  MatExpansionModule,
+  MatTableModule
 ];
 
 const DECLARATIONS: Type<any>[] = [

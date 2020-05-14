@@ -1,26 +1,36 @@
-import { Component, ElementRef, OnInit, ViewChild, Output, EventEmitter, Input } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  ViewChild,
+  Output,
+  EventEmitter,
+  Input,
+  ChangeDetectionStrategy,
+  AfterViewInit
+} from '@angular/core';
 import { Drawer } from './models';
 
 @Component({
   selector: 'app-sketchpad',
   templateUrl: './sketchpad.component.html',
-  styleUrls: ['./sketchpad.component.scss']
+  styleUrls: ['./sketchpad.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class SketchpadComponent implements OnInit {
+export class SketchpadComponent implements AfterViewInit {
   private drawer: Drawer = null;
 
   @Input() disabled = false;
   @Output() imageData = new EventEmitter<number[]>();
   @Output() imageClear = new EventEmitter<void>();
 
-  @ViewChild('sketchpad', {static: true}) sketchpadRef: ElementRef<HTMLCanvasElement>;
-  @ViewChild('thumbnail', {static: true}) thumbnailRef: ElementRef<HTMLCanvasElement>;
+  @ViewChild('sketchpad', { static: true }) sketchpadRef: ElementRef<HTMLCanvasElement>;
+  @ViewChild('thumbnail', { static: true }) thumbnailRef: ElementRef<HTMLCanvasElement>;
 
   get isDirty(): boolean {
     return !Boolean(this.drawer) || (this.drawer.isRecognized && !this.drawer.isDrawing);
   }
 
-  ngOnInit() {
+  ngAfterViewInit() {
     this.drawer = new Drawer(
       this.sketchpadRef.nativeElement,
       this.thumbnailRef.nativeElement

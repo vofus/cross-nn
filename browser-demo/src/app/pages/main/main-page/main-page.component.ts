@@ -2,10 +2,10 @@ import { Component, OnInit } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
 import { BrowserAdapter } from '@cross-nn/browser';
 import { MnistService } from '@core/mnist/mnist.service';
-import { NeuralNetwork } from '@cross-nn/core';
+import { NeuralNetwork, TrainItem } from '@cross-nn/core';
 import { ModelEditorService } from '@shared/model-editor/model-editor.service';
 import { ModelTrainingService } from '@shared/model-training/model-training.service';
-import { NnModelItem } from './types';
+import { NnModelItem, RecognitionResult, AutoTestResult } from './types';
 
 @Component({
   selector: 'app-main-page',
@@ -20,13 +20,17 @@ export class MainPageComponent implements OnInit {
     changed: false
   };
 
-  public recognition = {
-    number: null,
+  public autoTestCount = 50;
+  public autoTestResults: AutoTestResult[] = [];
+  public recognition: RecognitionResult = {
+    digit: null,
     percent: null
   };
 
   public models: NnModelItem[] = [];
   public selectedModel: NnModelItem = null;
+  public selectedTabIndex = 0;
+  public displayedColumns = ['digit', 'percent'];
 
   constructor(
     private sanitizer: DomSanitizer,
@@ -47,8 +51,8 @@ export class MainPageComponent implements OnInit {
     this.threadsConfig.count = typeof count === 'number'
       && !isNaN(count)
       && count > 0
-        ? count
-        : 1;
+      ? count
+      : 1;
   }
 
   /**
@@ -110,11 +114,11 @@ export class MainPageComponent implements OnInit {
    */
   public async trainModel(event: Event, nnModel: NnModelItem) {
     event.stopPropagation();
-    
+
     try {
-      const {algorithm, epochs, trainingSetSize} = await this.modelTraining.open().toPromise();
+      const { algorithm, epochs, trainingSetSize } = await this.modelTraining.open().toPromise();
       const trainingSet = this.mnist.getTrainSet(trainingSetSize);
-      const progressReporter = ({epochNumber}) => {
+      const progressReporter = ({ epochNumber }) => {
         nnModel.progress = Math.ceil((epochNumber / epochs) * 100);
       };
 
@@ -141,7 +145,7 @@ export class MainPageComponent implements OnInit {
    */
   public removeModel(event: Event, index: number) {
     event.stopPropagation();
-    
+
     try {
       const condition = index >= 0 && index <= (this.models.length - 1);
 
@@ -171,20 +175,38 @@ export class MainPageComponent implements OnInit {
     event.stopPropagation();
   }
 
+  public autoTest() {
+    if (Boolean(this.selectedModel) && Boolean(this.selectedModel.model)) {
+      const recognizer = this.getRecognitionResult(this.selectedModel.model);
+
+      this.autoTestResults = this.mnist.getTestSets(this.autoTestCount)
+        .map((trainSet, digit) => {
+          let recognized = 0;
+          const results = trainSet.map((t: TrainItem) => {
+            const result = recognizer(t.inputs);
+
+            if (result.digit === digit) {
+              ++recognized;
+            }
+
+            return result;
+          });
+
+          return {
+            digit,
+            results,
+            percent: Math.round((recognized / trainSet.length) * 10000) / 100
+          };
+        });
+    }
+  }
+
   /**
    * Распознать изображение
    */
   public recognizeImage(imageData: number[]) {
     if (Boolean(this.selectedModel) && Boolean(this.selectedModel.model)) {
-      const recognition = this.selectedModel.model.query(imageData);
-      const arr = recognition.toArray();
-      const index = this.getMaxIndex(arr);
-      const percent = Math.round(arr[index][0] * 100);
-
-      this.recognition = {
-        number: index,
-        percent: percent
-      };
+      this.recognition = this.getRecognitionResult(this.selectedModel.model)(imageData);
     }
   }
 
@@ -193,7 +215,7 @@ export class MainPageComponent implements OnInit {
    */
   public resetRecognitionData() {
     this.recognition = {
-      number: null,
+      digit: null,
       percent: null
     };
   }
@@ -203,5 +225,21 @@ export class MainPageComponent implements OnInit {
    */
   private getMaxIndex(result: number[][]): number {
     return result.reduce((res, [item], i) => item > result[res][0] ? i : res, 0);
+  }
+
+  /**
+   * Получить результат распознования
+   */
+  private getRecognitionResult(nn: NeuralNetwork) {
+    return (inputs: number[]): RecognitionResult => {
+      const result = nn.query(inputs).toArray();
+      const index = this.getMaxIndex(result);
+      const percent = Math.round(result[index][0] * 100);
+
+      return {
+        digit: index,
+        percent: percent
+      };
+    };
   }
 }
