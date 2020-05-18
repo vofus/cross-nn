@@ -5,10 +5,12 @@ import { NeuralNetworkConfig, TrainItem, LearningGradAlgorithm, Activator } from
 import { serializeFunction, deserializeFunction } from '../src/utils';
 import { sigmoid } from '../src/activators';
 
-serializeNN();
+// serializeNN();
 // serializeTest();
 // mnistTest();
-// xorTest();
+// mnistTestRProp();
+xorTest();
+// xorTestRProp();
 
 function serializeNN() {
 	const nnConfig: NeuralNetworkConfig = {
@@ -55,9 +57,8 @@ function serializeTest() {
 
 function mnistTest() {
 	const nnConfig: NeuralNetworkConfig = {
-		neuronCounts: [784, 30, 30, 10],
-		learningRate: 0.15,
-		moment: 0.3
+		neuronCounts: [784, 100, 10],
+		learningRate: 0.15
 	};
 
 	const trainSet: TrainItem[] = mnist.set(100, 0).training
@@ -73,9 +74,12 @@ function mnistTest() {
 
 	for (let i = 0; i < 10; ++i) {
 		const mnistItem = mnist[i].set(0, 9)[i];
-		const result = nn.query(mnistItem.input)
+		const response = nn.query(mnistItem.input)
 			.resize([1, 10])
-			.toArray()[0]
+			.toArray()[0];
+		console.log('RESPONSE: ', response);
+
+		const result = response
 			.reduce((res, item, i, arr) => {
 				return item > arr[res] ? i : res;
 			}, 0);
@@ -87,8 +91,7 @@ function mnistTest() {
 function xorTest() {
 	const nnConfig: NeuralNetworkConfig = {
 		neuronCounts: [2, 30, 50, 30, 1],
-		learningRate: 0.3,
-		moment: 0.3
+		learningRate: 0.3
 	};
 
 	const trainSet: TrainItem[] = [
@@ -110,4 +113,65 @@ function xorTest() {
 	console.log('[1, 0]: ', nn.query([1, 0]));
 	console.log('[0, 0]: ', nn.query([0, 0]));
 	console.log('[1, 1]: ', nn.query([1, 1]));
+}
+
+function xorTestRProp() {
+	const nnConfig: NeuralNetworkConfig = {
+		neuronCounts: [2, 20, 30, 10, 1],
+		learningRate: 0.1
+	};
+
+	const trainSet: TrainItem[] = [
+		{inputs: [0, 1], targets: [1]},
+		{inputs: [1, 0], targets: [1]},
+		{inputs: [0, 0], targets: [0]},
+		{inputs: [1, 1], targets: [0]}
+	];
+
+	const scaledTrainSet: TrainItem[] = [];
+	for (let i = 0; i < 100; ++i) {
+		scaledTrainSet.push(...trainSet);
+	}
+
+	const nn = new NeuralNetwork(nnConfig);
+	nn.gradAlgorithmTrain(LearningGradAlgorithm.R_PROP, scaledTrainSet, 50);
+
+	console.log('[0, 1]: ', nn.query([0, 1]).toArray());
+	console.log('[1, 0]: ', nn.query([1, 0]).toArray());
+	console.log('[0, 0]: ', nn.query([0, 0]).toArray());
+	console.log('[1, 1]: ', nn.query([1, 1]).toArray());
+}
+
+
+function mnistTestRProp() {
+	const nnConfig: NeuralNetworkConfig = {
+		neuronCounts: [784, 50, 10],
+		learningRate: 0.1
+	};
+
+	const trainSet: TrainItem[] = mnist.set(200, 0).training
+		.map<TrainItem>((item: any) => {
+			return {
+				inputs: item.input,
+				targets: item.output
+			};
+		});
+
+	const nn = new NeuralNetwork(nnConfig);
+	nn.gradAlgorithmTrain(LearningGradAlgorithm.R_PROP, trainSet, 5);
+
+	for (let i = 0; i < 10; ++i) {
+		const mnistItem = mnist[i].set(0, 9)[i];
+		const response = nn.query(mnistItem.input)
+			.resize([1, 10])
+			.toArray()[0];
+		console.log('RESPONSE: ', response);
+
+		const result = response
+			.reduce((res, item, i, arr) => {
+				return item > arr[res] ? i : res;
+			}, 0);
+
+		console.log('Input: ' + i, '; Output: ' + result + ';');
+	}
 }
