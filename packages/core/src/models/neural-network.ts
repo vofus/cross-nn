@@ -2,7 +2,15 @@ import { Layer } from './layer';
 import { sigmoid } from '../activators';
 import { isNumber, shuffle } from '../utils';
 import { defaultTrainReporter } from '../reporters';
-import { Activator, LayerConfig, LayerType, NeuralNetworkConfig, LearningGradAlgorithm, TrainItem, TrainReporter } from '../types';
+import {
+	Activator,
+	LayerConfig,
+	LayerType,
+	LearningGradAlgorithm,
+	NeuralNetworkConfig,
+	TrainItem,
+	TrainReporter
+} from '../types';
 import { Matrix } from '@cross-nn/matrix';
 
 export class NeuralNetwork {
@@ -105,6 +113,9 @@ export class NeuralNetwork {
 			case LearningGradAlgorithm.BACK_PROP_WITH_MOMENT:
 				this.gradAlgorithmBackPropTrain(trainSet, epochs, reporter);
 				break;
+			case LearningGradAlgorithm.R_PROP:
+				this.gradAlgorithmRPropTrain(trainSet, epochs, reporter);
+				break;
 			default:
 				break;
 		}
@@ -131,6 +142,38 @@ export class NeuralNetwork {
 
 				this.layers.reduceRight((error: Matrix, layer: Layer) => {
 					return layer.calcErrors(error);
+				}, errorMatrix);
+			}
+
+			reporter({
+				epochNumber: epochCounter,
+				epochTime: Date.now() - startDate
+			});
+		}
+	}
+
+	/**
+	 * Обучение сети при помощи градиентного алгоритма RPROP
+	 * @TODO требуется рефакторинг
+	 */
+	private gradAlgorithmRPropTrain(trainSet: TrainItem[], epochs: number, reporter: TrainReporter) {
+		let epochCounter = 0;
+
+		while (++epochCounter <= epochs) {
+			const shuffled: TrainItem[] = shuffle(trainSet);
+			let startDate = Date.now();
+			let trainCounter = shuffled.length;
+
+			while (--trainCounter >= 0) {
+				const { inputs, targets } = shuffled[trainCounter];
+				const inputMatrix = Matrix.fromArray([inputs]).resize([inputs.length, 1]);
+				const targetMatrix = Matrix.fromArray([targets]).resize([targets.length, 1]);
+
+				const outputMatrix = this.layers.reduce((input: Matrix, layer: Layer) => layer.calcOutputs(input), inputMatrix);
+				const errorMatrix = targetMatrix.subtract(outputMatrix);
+
+				this.layers.reduceRight((error: Matrix, layer: Layer) => {
+					return layer.calcErrorsRProp(error);
 				}, errorMatrix);
 			}
 

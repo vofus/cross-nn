@@ -3,6 +3,11 @@ import { Activator, LayerConfig, LayerType } from '../types';
 import { isNumber, serializeFunction, deserializeFunction } from '../utils';
 
 export class Layer {
+	// Параметры для алгоритма RPROP
+	private static readonly LR_DECREASE_FACTOR = 0.5;
+	private static readonly LR_INCREASE_FACTOR = 1.2;
+	private static readonly LR_MAX = 50;
+	private static readonly LR_MIN = 0.000001;
 	// Тип слоя
 	private TYPE: LayerType;
 	// Коэффициент обучения
@@ -21,6 +26,10 @@ export class Layer {
 	// для того чтобы при обратном проходе рассчитать корректировку весовых коэффициентов
 	private inputs: Matrix;
 	private outputs: Matrix;
+	// Матрица скоростей обучения для каждой связи для алгоритма RPROP
+	private LRMatrix: Matrix;
+	// Матрица предыдущего градиента ошибки для алгоритма RPROP
+	private prevErrorGrad: Matrix;
 
 	/**
 	 * Инициализировать матрицу весовых коэффициентов
@@ -131,6 +140,60 @@ export class Layer {
 		}
 
 		this.weights = this.weights.add(deltaWeights);
+
+		return prevLayerErrors;
+	}
+
+	/**
+	 * Вычислить матрицу ошибок для предыдущего слоя для алгоритма RPROP
+	 */
+	public calcErrorsRProp(errors: Matrix): Matrix {
+		if (this.TYPE === LayerType.INPUT) {
+			return null;
+		}
+
+		if (!Boolean(this.LRMatrix)) {
+			this.LRMatrix = Matrix.fromParams(this.weights.size, this.LR);
+		}
+
+		const prevLayerErrors = this.weights.T.dot(errors);
+		const ones = Matrix.fromParams(this.outputs.size, 1);
+		const errorGrad = errors
+			.multiply(this.outputs)
+			.multiply(ones.subtract(this.outputs))
+			.dot(this.inputs.T);
+
+		if (Boolean(this.prevErrorGrad)) {
+			const changesErrorGrad = this.prevErrorGrad.multiply(errorGrad);
+			const [rows, cols] = this.LRMatrix.size;
+
+			for (let rowIndex = 0; rowIndex < rows; ++rowIndex) {
+				for (let colIndex = 0; colIndex < cols; ++colIndex) {
+					const changeGrad = changesErrorGrad.get(rowIndex, colIndex);
+					let LR = this.LRMatrix.get(rowIndex, colIndex);
+
+					if (changeGrad > 0) {
+						LR = Math.min(LR * Layer.LR_INCREASE_FACTOR, Layer.LR_MAX);
+					}
+
+					if (changeGrad < 0) {
+						LR = Math.max(LR * Layer.LR_DECREASE_FACTOR, Layer.LR_MIN);
+					}
+
+					this.LRMatrix.set(rowIndex, colIndex, LR);
+				}
+			}
+		}
+
+		const deltaWeights = !Boolean(this.prevErrorGrad)
+			? errorGrad
+				.multiply(this.LRMatrix)
+			: errorGrad
+				.applyFunction((i) => i === 0 ? 0 : i > 0 ? 1 : -1)
+				.multiply(this.LRMatrix);
+
+		this.prevErrorGrad = errorGrad;
+		this.weights = this.weights.subtract(deltaWeights);
 
 		return prevLayerErrors;
 	}
