@@ -3,7 +3,8 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve",
+    "start": "node server.js",
+    "dev": "ng serve",
     "build": "ng build",
     "test": "ng test",
     "lint": "ng lint",
@@ -23,6 +24,7 @@
     "@angular/router": "~9.1.6",
     "@cross-nn/browser": "~0.0.10",
     "@cross-nn/core": "~0.0.9",
+    "express": "^4.17.1",
     "mnist": "^1.1.0",
     "rxjs": "~6.5.4",
     "tslib": "^1.10.0",
