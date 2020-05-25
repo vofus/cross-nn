@@ -13,8 +13,8 @@ export class ModelTrainingComponent implements OnInit {
   public readonly ALGORITHMS: AlgorithmListItem[] = [
     {id: LearningGradAlgorithm.BACK_PROP, name: 'Error back propagation'},
     {id: LearningGradAlgorithm.BACK_PROP_WITH_MOMENT, name: 'Error back propagation with moment'},
-    {id: LearningGradAlgorithm.R_PROP, name: 'Resilient propagation'},
-    {id: LearningGradAlgorithm.QUICK_PROP, name: 'Quick propogation'}
+    // {id: LearningGradAlgorithm.R_PROP, name: 'Resilient propagation'},
+    // {id: LearningGradAlgorithm.QUICK_PROP, name: 'Quick propagation'}
   ];
   public configForm: FormGroup;
 

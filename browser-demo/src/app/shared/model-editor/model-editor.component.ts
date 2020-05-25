@@ -19,6 +19,12 @@ export class ModelEditorComponent implements OnInit {
       : this.configForm.get('HIDDEN') as FormControl;
   }
 
+  get HIDDEN_LAYERS(): FormControl | null {
+    return !Boolean(this.configForm)
+      ? null
+      : this.configForm.get('HIDDEN_LAYERS') as FormControl;
+  }
+
   get LR(): FormControl | null {
     return !Boolean(this.configForm)
       ? null
@@ -39,15 +45,17 @@ export class ModelEditorComponent implements OnInit {
   ngOnInit(): void {
     this.configForm = this.fb.group({
       HIDDEN: [100, [Validators.required, Validators.min(1)]],
+      HIDDEN_LAYERS: [1, [Validators.required, Validators.min(1)]],
       LR: [0.3, []],
       MOMENT: [0, []]
     });
   }
 
   save() {
-    const {HIDDEN, LR, MOMENT} = this.configForm.value;
+    const {HIDDEN, HIDDEN_LAYERS, LR, MOMENT} = this.configForm.value;
+    const hiddenLayers = new Array(HIDDEN_LAYERS).fill(HIDDEN);
     const config: NeuralNetworkConfig = {
-      neuronCounts: [this.INPUT_SIZE, HIDDEN, this.OUTPUT_SIZE]
+      neuronCounts: [this.INPUT_SIZE, ...hiddenLayers, this.OUTPUT_SIZE]
     };
 
     if (typeof LR === 'number' && !isNaN(LR)) {
